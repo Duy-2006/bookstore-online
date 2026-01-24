@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: admin_layout(~{::section})}">
+<head><title>Quản lý Khách hàng</title></head>
+<body>
+    <section>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="m-0">Danh sách Khách Hàng</h4>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Username</th>
+                            <th>Họ tên / Email</th>
+                            <th>Tổng chi tiêu</th>
+                            <th>Phân loại</th>
+                            <th>Trạng thái</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${customers}">
+                            <td th:text="${u.username}" class="fw-bold"></td>
+                            <td>
+                                <span th:text="${u.fullname}"></span><br>
+                                <small class="text-muted" th:text="${u.email}"></small>
+                            </td>
+                            <td class="text-end fw-bold text-success" 
+                                th:text="${#numbers.formatDecimal(u.totalSpending, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                            </td>
+                            <td>
+                                <span th:if="${u.customerType == 'VIP (Thân thiết)'}" class="badge bg-warning text-dark"><i class="fa-solid fa-crown"></i> VIP</span>
+                                <span th:if="${u.customerType == 'Tiềm năng'}" class="badge bg-info text-dark">Tiềm năng</span>
+                                <span th:if="${u.customerType == 'Khách mới'}" class="badge bg-secondary">Mới</span>
+                            </td>
+                            <td>
+                                <span th:if="${u.active}" class="badge bg-success">Hoạt động</span>
+                                <span th:unless="${u.active}" class="badge bg-danger">Đã khóa</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/admin/customers/history/{username}(username=${u.username})}" 
+                                   class="btn btn-outline-primary btn-sm" title="Lịch sử mua">
+                                    <i class="fa-solid fa-clock-rotate-left"></i>
+                                </a>
+                                
+                                <a th:href="@{/admin/customers/toggle/{username}(username=${u.username})}" 
+                                   class="btn btn-sm"
+                                   th:classappend="${u.active} ? 'btn-outline-danger' : 'btn-outline-success'"
+                                   th:text="${u.active} ? 'Khóa' : 'Mở'"
+                                   onclick="return confirm('Bạn có chắc muốn thay đổi trạng thái tài khoản này?')">
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

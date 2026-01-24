@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: admin_layout(~{::section})}">
+<head><title>Lịch sử mua hàng</title></head>
+<body>
+    <section>
+        <div class="mb-3">
+            <a href="/admin/customers" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách</a>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Hồ sơ khách hàng: <span class="text-primary" th:text="${customer.fullname}"></span></h5>
+                <p class="card-text">Email: <span th:text="${customer.email}"></span></p>
+                <p class="card-text">Tổng chi tiêu tích lũy: <strong class="text-danger" th:text="${#numbers.formatDecimal(customer.totalSpending, 0, 'COMMA', 0, 'POINT')} + ' đ'"></strong></p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-info text-dark">
+                <h5 class="m-0">Lịch sử đơn hàng</h5>
+            </div>
+            <div class="card-body">
+                <div th:if="${customer.orders.empty}" class="alert alert-warning">Khách hàng này chưa có đơn hàng nào.</div>
+                
+                <table class="table" th:unless="${customer.orders.empty}">
+                    <thead>
+                        <tr>
+                            <th>Mã đơn</th>
+                            <th>Ngày đặt</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Chi tiết</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="o : ${customer.orders}"> 
+                            <td th:text="'#' + ${o.id}"></td>
+                            <td th:text="${#dates.format(o.createDate, 'dd-MM-yyyy HH:mm')}"></td>
+                            <td th:text="${#numbers.formatDecimal(o.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                            <td>
+                                <span th:text="${o.status}"></span>
+                            </td>
+                            <td>
+                                <a th:href="@{/admin/orders/detail/{id}(id=${o.id})}" class="btn btn-link btn-sm">Xem</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

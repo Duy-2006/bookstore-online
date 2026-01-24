@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: admin_layout(~{::section})}">
+<head><title>Quản lý Thể loại</title></head>
+<body>
+    <section>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h4 class="m-0">Danh sách Thể Loại</h4>
+                <a href="/admin/categories/create" class="btn btn-light btn-sm"><i class="fa-solid fa-plus"></i> Thêm mới</a>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên Thể Loại</th>
+                            <th>Số đầu sách</th> <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item : ${categories}">
+                            <td th:text="${item.id}"></td>
+                            <td th:text="${item.name}"></td>
+                            
+                            <td>
+                                <span class="badge bg-info text-dark" th:text="${item.books.size()} + ' quyển'"></span>
+                            </td>
+                            
+                            <td>
+                                <a th:href="@{/admin/categories/edit/{id}(id=${item.id})}" class="btn btn-warning btn-sm"><i class="fa-solid fa-pen"></i></a>
+                                <a th:href="@{/admin/categories/delete/{id}(id=${item.id})}" class="btn btn-danger btn-sm" onclick="return confirm('Xóa thể loại này?')"><i class="fa-solid fa-trash"></i></a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

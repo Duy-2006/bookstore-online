@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: admin_layout(~{::section})}">
+<body>
+    <section>
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 th:text="${category.id == null ? 'Thêm Thể Loại' : 'Cập Nhật Thể Loại'}"></h4>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/categories/save}" th:object="${category}" method="post">
+                    <input type="hidden" th:field="*{id}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tên Thể Loại:</label>
+                        <input type="text" class="form-control" th:field="*{name}" th:classappend="${#fields.hasErrors('name')} ? 'is-invalid' : ''">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Lỗi</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success"><i class="fa-solid fa-save"></i> Lưu lại</button>
+                    <a href="/admin/categories" class="btn btn-secondary">Quay lại</a>
+                </form>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

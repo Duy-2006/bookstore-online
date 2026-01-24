@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: admin_layout(~{::section})}">
+<head><title>Quản lý Đơn hàng</title></head>
+<body>
+    <section>
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="m-0">Danh sách Đơn Hàng</h4>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã Đơn</th>
+                            <th>Khách hàng</th>
+                            <th>Ngày đặt</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="order : ${orders}">
+                            <td th:text="'#' + ${order.id}" class="fw-bold"></td>
+                            <td>
+                                <span th:text="${order.receiver}"></span><br>
+                                <small class="text-muted" th:text="${order.phone}"></small>
+                            </td>
+                            <td th:text="${#dates.format(order.createDate, 'dd-MM-yyyy HH:mm')}"></td>
+                            <td class="text-danger fw-bold" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                            <td>
+                                <span th:if="${order.status.name() == 'PENDING'}" class="badge bg-warning text-dark">Chờ xác nhận</span>
+                                <span th:if="${order.status.name() == 'SHIPPING'}" class="badge bg-info text-dark">Đang giao</span>
+                                <span th:if="${order.status.name() == 'COMPLETED'}" class="badge bg-success">Hoàn thành</span>
+                                <span th:if="${order.status.name() == 'CANCELLED'}" class="badge bg-danger">Đã hủy</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/admin/orders/detail/{id}(id=${order.id})}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fa-solid fa-eye"></i> Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

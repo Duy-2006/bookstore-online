@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: admin_layout(~{::section})}">
+<body>
+    <section>
+        <div class="card">
+            <div class="card-header bg-info text-dark">
+                <h4 th:text="${author.id == null ? 'Thêm Tác Giả' : 'Cập Nhật Tác Giả'}"></h4>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/authors/save}" th:object="${author}" method="post">
+                    <input type="hidden" th:field="*{id}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tên Tác Giả (*):</label>
+                        <input type="text" class="form-control" th:field="*{name}" th:classappend="${#fields.hasErrors('name')} ? 'is-invalid' : ''">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Tên không hợp lệ</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email liên hệ:</label>
+                        <input type="email" class="form-control" th:field="*{email}">
+                    </div>
+
+                    <button type="submit" class="btn btn-success"><i class="fa-solid fa-save"></i> Lưu lại</button>
+                    <a href="/admin/authors" class="btn btn-secondary">Quay lại</a>
+                </form>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

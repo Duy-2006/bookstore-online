@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: admin_layout(~{::section})}">
+<head><title>Quản lý Kho hàng</title></head>
+<body>
+    <section>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+        <div class="row">
+            <div class="col-md-5">
+                <div class="card mb-4 border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="m-0"><i class="fa-solid fa-triangle-exclamation"></i> Cảnh báo Sắp hết hàng (< 10)</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm table-striped m-0">
+                            <thead>
+                                <tr>
+                                    <th>Tên sách</th>
+                                    <th class="text-center">Tồn</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="b : ${lowStockBooks}">
+                                    <td th:text="${b.title}"></td>
+                                    <td class="text-center fw-bold text-danger" th:text="${b.quantity}"></td>
+                                </tr>
+                                <tr th:if="${lowStockBooks.empty}">
+                                    <td colspan="2" class="text-center text-muted p-3">Kho hàng ổn định!</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card border-success">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="m-0"><i class="fa-solid fa-dolly"></i> Nhập kho thủ công</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/inventory/import}" method="post">
+                            <div class="mb-3">
+                                <label>Chọn sách:</label>
+                                <select name="bookId" class="form-select" required>
+                                    <option th:each="b : ${books}" th:value="${b.id}" 
+                                            th:text="${b.title} + ' (Hiện có: ' + ${b.quantity} + ')'">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label>Số lượng nhập thêm:</label>
+                                <input type="number" name="quantity" class="form-control" min="1" required>
+                            </div>
+                            <div class="mb-3">
+                                <label>Ghi chú nguồn gốc:</label>
+                                <input type="text" name="note" class="form-control" placeholder="Vd: Nhập từ NXB Kim Đồng..." required>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Xác nhận Nhập kho</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="m-0"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử Nhập - Xuất</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Thời gian</th>
+                                    <th>Sách</th>
+                                    <th>Loại</th>
+                                    <th>Số lượng</th>
+                                    <th>Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="log : ${logs}">
+                                    <td th:text="${#dates.format(log.logDate, 'dd-MM HH:mm')}"></td>
+                                    <td th:text="${log.book.title}" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></td>
+                                    <td>
+                                        <span th:if="${log.type == 'IMPORT'}" class="badge bg-success">NHẬP</span>
+                                        <span th:if="${log.type == 'SALE'}" class="badge bg-warning text-dark">BÁN</span>
+                                        <span th:if="${log.type == 'CANCEL'}" class="badge bg-secondary">TRẢ</span>
+                                    </td>
+                                    <td class="fw-bold" 
+                                        th:classappend="${log.changeAmount > 0} ? 'text-success' : 'text-danger'"
+                                        th:text="${log.changeAmount > 0 ? '+' + log.changeAmount : log.changeAmount}">
+                                    </td>
+                                    <td th:text="${log.note}" class="small text-muted"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
