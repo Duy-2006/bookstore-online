@@ -13,3 +13,4 @@ public class SellerPromotionController {
         return "seller/promotion/add";
     }
 }
+//push code
