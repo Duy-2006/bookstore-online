@@ -1,4 +1,4 @@
-package com.fpoly.java5demo.controllers;
+package com.poly.java5.Controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
