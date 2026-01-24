@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" class="light">
+<head th:replace="head :: head"></head>
+
+<body class="bg-[#f8fafb] font-display text-[#121617]">
+<div th:replace="menu :: menu"></div>  
+
+	<!-- HEADER -->
+	<header class="sticky top-0 z-50 bg-white border-b">
+		<div class="flex justify-between items-center px-5 py-4">
+			<div class="flex items-center gap-3">
+			</div>
+		</div>
+	</header>
+
+	<!-- MAIN -->
+	<main class="pb-40">
+
+		<!-- TITLE -->
+		<div class="px-5 pt-8 pb-6 bg-white">
+			<h2 class="text-3xl font-extrabold">Giỏ hàng của bạn</h2>
+			<p class="text-[#677c83] font-semibold mt-1"
+				th:text="'Bạn đang có ' + ${cartItems.size()} + ' sản phẩm'"></p>
+		</div>
+
+		<!-- CART ITEMS -->
+		<div class="bg-white">
+
+			<!-- LOOP CART DETAIL -->
+			<div th:each="item : ${cartItems}"
+				class="border-b flex items-stretch">
+
+				<div class="flex-1 flex gap-5 p-5 pr-0">
+
+					<!-- IMAGE -->
+					<div class="w-32 h-44 rounded-2xl bg-cover bg-center"
+						th:style="'background-image:url(' + ${item['imageUrl']} + ')'">
+					</div>
+
+					<div class="flex-1 flex flex-col justify-between">
+
+						<div>
+							<span class="text-2xl font-extrabold block"
+								th:text="${item['title']}"> </span> <span
+								class="text-sm text-[#677c83] font-bold uppercase tracking-widest"
+								th:text="${item['author']}"> </span>
+						</div>
+
+						<div class="space-y-3">
+
+							<span class="text-2xl font-black text-primary"
+								th:text="${item['price']} + 'đ'"> </span>
+
+							<!-- QUANTITY -->
+							<div
+								class="flex items-center gap-4 bg-gray-100 p-2 rounded-full w-fit pr-5">
+
+								<a th:href="@{/cart/decrease/{id}(id=${item['cartDetailId']})}"
+									class="size-10 flex items-center justify-center bg-white rounded-full shadow">
+									<span class="material-symbols-outlined">remove</span>
+								</a> <span class="text-xl font-extrabold min-w-[30px] text-center"
+									th:text="${item['quantity']}"> </span> <a
+									th:href="@{/cart/remove/{id}(id=${item['cartDetailId']})}"
+									class="size-10 flex items-center justify-center bg-white rounded-full shadow">
+									<span class="material-symbols-outlined">add</span>
+								</a>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- DELETE -->
+				<a th:href="@{/cart/remove/{id}(id=${item['cartDetailId']})}"
+					class="w-20 bg-red-50 flex items-center justify-center text-red-500">
+					<span class="material-symbols-outlined text-3xl">delete</span>
+				</a>
+			</div>
+		</div>
+
+		<!-- NOTE -->
+		<div class="mt-6 px-5">
+			<label class="font-bold text-lg">Chú thích đơn hàng</label>
+			<textarea class="w-full border p-4 mt-2" name="note"
+				placeholder="Nhập ghi chú..."></textarea>
+		</div>
+
+	</main>
+
+	<!-- FOOTER -->
+	<div class="fixed bottom-0 left-0 right-0 bg-white border-t p-5">
+
+		<div class="flex justify-between mb-4">
+			<div>
+				<span class="text-xs text-[#677c83] font-bold uppercase">Tổng
+					cộng</span>
+				<div class="text-2xl font-black text-primary"
+					th:text="${totalPrice} + 'đ'"></div>
+			</div>
+
+			<div class="text-right text-sm text-[#677c83]"
+				th:text="'Tạm tính: ' + ${cartItems.size()} + ' sản phẩm'"></div>
+		</div>
+
+		<div class="flex gap-3">
+    <!-- QUAY VỀ TRANG CHỦ -->
+    <a th:href="@{/home}"
+       class="flex-1 py-3 border rounded-xl text-center font-bold">
+        Tiếp tục mua
+    </a>
+
+    <!-- CHUYỂN SANG TRANG CHECKOUT -->
+    <a th:href="@{/checkout}"
+       class="flex-[1.2] py-3 bg-primary text-white font-bold rounded-xl text-center">
+        Thanh toán →
+    </a>
+</div>
+
+
+	</div>
+<div th:replace="footer :: footer"></div>  
+</body>
+</html>

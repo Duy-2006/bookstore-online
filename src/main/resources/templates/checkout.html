@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="head :: head"></head>
+
+<body class="bg-white min-h-screen font-display">
+<div th:replace="menu :: menu"></div>  
+<form th:action="@{/checkout}"
+      method="post"
+      th:object="${checkoutBean}">
+
+<!-- ================= HEADER ================= -->
+<header class="sticky top-0 z-50 bg-white border-b">
+  <div class="flex items-center px-4 py-4">
+    <a th:href="@{/cart}" class="size-10 flex items-center justify-center">
+      <span class="material-symbols-outlined text-primary">arrow_back_ios_new</span>
+    </a>
+    <h2 class="flex-1 text-center text-xl font-extrabold uppercase">Thanh Toán</h2>
+  </div>
+</header>
+
+<main>
+
+<div class="flex flex-col md:flex-row">
+
+<!-- ================= THÔNG TIN KHÁCH HÀNG ================= -->
+<section class="flex-1 border-r p-6">
+<h3 class="text-xl font-bold mb-6">Thông tin khách hàng</h3>
+
+<div class="space-y-4">
+
+<!-- Họ tên -->
+<div>
+<input th:field="*{customerName}"
+       class="w-full border h-12 px-4 rounded"
+       placeholder="Họ và tên">
+<p class="text-red-500 text-sm"
+   th:errors="*{customerName}"></p>
+</div>
+
+<!-- SĐT -->
+<div>
+<input th:field="*{customerPhone}"
+       class="w-full border h-12 px-4 rounded"
+       placeholder="Số điện thoại">
+<p class="text-red-500 text-sm"
+   th:errors="*{customerPhone}"></p>
+</div>
+
+<!-- EMAIL (🔥 MỚI) -->
+<div>
+<input th:field="*{email}"
+       class="w-full border h-12 px-4 rounded"
+       placeholder="Email">
+<p class="text-red-500 text-sm"
+   th:errors="*{email}"></p>
+</div>
+
+<!-- Địa chỉ -->
+<div>
+<textarea th:field="*{customerAddress}"
+          class="w-full border p-4 rounded min-h-[100px]"
+          placeholder="Địa chỉ giao hàng"></textarea>
+<p class="text-red-500 text-sm"
+   th:errors="*{customerAddress}"></p>
+</div>
+
+</div>
+</section>
+
+
+
+<!-- ================= TÓM TẮT ĐƠN HÀNG ================= -->
+<section class="flex-1 bg-gray-50">
+<div class="p-6">
+
+<div class="flex justify-between mb-6">
+<h3 class="text-xl font-bold">Tóm tắt đơn hàng</h3>
+<span class="text-sm font-bold"
+      th:text="${#lists.size(cartDetails)} + ' sản phẩm'"></span>
+</div>
+
+<!-- LIST -->
+<div class="divide-y">
+  <div th:each="item : ${cartDetails}" class="flex gap-4 py-4">
+
+    <img th:src="${item.imageUrl}"
+         class="size-20 object-cover rounded-lg"/>
+
+    <div class="flex-1">
+      <p class="font-bold" th:text="${item.title}"></p>
+
+      <p class="text-sm text-gray-500">
+        Số lượng:
+        <span th:text="${item.quantity}"></span>
+      </p>
+
+      <p class="text-primary font-extrabold"
+         th:text="${item.itemTotal} + 'đ'"></p>
+    </div>
+
+  </div>
+</div>
+
+
+</div>
+</section>
+
+</div>
+
+<!-- ================= THANH TOÁN ================= -->
+<section class="border-t bg-white">
+<div class="p-6 flex flex-col lg:flex-row gap-8">
+
+<div class="flex-1">
+<h3 class="text-xl font-bold mb-4">Phương thức thanh toán</h3>
+
+<label class="flex items-center gap-3 mb-3">
+<input type="radio" name="paymentMethod" value="COD" checked>
+Thanh toán khi giao hàng
+</label>
+
+<label class="flex items-center gap-3">
+<input type="radio" name="paymentMethod" value="BANKING">
+Chuyển khoản ngân hàng
+</label>
+</div>
+
+<!-- ================= TỔNG TIỀN ================= -->
+<div class="w-full lg:w-96 bg-gray-50 p-6 rounded-xl border">
+<div class="space-y-3">
+
+<div class="flex justify-between">
+<span>Tạm tính</span>
+<span th:text="${totalAmount} + 'đ'"></span>
+</div>
+
+<div class="flex justify-between">
+<span>Phí vận chuyển</span>
+<span th:text="${shippingFee} + 'đ'"></span>
+</div>
+
+<div class="flex justify-between text-primary">
+<span>Giảm giá</span>
+<span th:text="'-' + ${discount} + 'đ'"></span>
+</div>
+
+<div class="flex justify-between font-bold text-xl pt-4 border-t">
+<span>Tổng thanh toán</span>
+<span class="text-primary"
+      th:text="${finalAmount} + 'đ'"></span>
+</div>
+
+</div>
+</div>
+
+</div>
+</section>
+
+</main>
+
+<!-- ================= SUBMIT ================= -->
+<div class="fixed bottom-0 left-0 right-0 bg-white border-t p-5">
+<button type="submit"
+class="w-full bg-primary text-white h-16 rounded-xl text-xl font-black">
+XÁC NHẬN ĐẶT HÀNG
+</button>
+</div>
+
+</form>
+<div th:replace="footer :: footer"></div>  
+</body>
+</html>
