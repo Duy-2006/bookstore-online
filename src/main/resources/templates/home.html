@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>BookStore – Content</title>
+
+<!-- Font + Icons -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+	href="https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&display=swap"
+	rel="stylesheet">
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+	tailwind.config = {
+		theme : {
+			extend : {
+				fontFamily : {
+					display : [ 'Manrope', 'sans-serif' ]
+				},
+				colors : {
+					primary : '#1a8a4d',
+					secondary : '#E0957F'
+				}
+			}
+		}
+	}
+</script>
+</head>
+
+<body class="bg-gray-100 font-display text-gray-800">
+	<div th:replace="menu :: menu"></div>
+	<!-- ================= MAIN ================= -->
+	<main class="w-[1280px] mx-auto mt-8 flex gap-8">
+
+		<!-- ===== SIDEBAR ===== -->
+		<aside class="w-[260px]">
+			<div class="bg-white rounded-xl shadow p-5">
+				<h3 class="font-bold mb-4 text-lg">Danh mục</h3>
+
+				<ul class="space-y-3">
+					<li th:each="c : ${categories}"><a th:text="${c.name}"
+						class="text-sm hover:text-primary"></a></li>
+
+					<li th:if="${categories == null}"><span
+						class="text-xs text-gray-400">Chưa có danh mục</span></li>
+				</ul>
+			</div>
+		</aside>
+
+		<!-- ===== CONTENT ===== -->
+		<section class="flex-1 space-y-12">
+
+			<!-- BANNER -->
+			<div class="h-[420px] bg-gray-300 rounded-xl overflow-hidden">
+
+				<div th:each="banner : ${banners}">
+					<a th:if="${banner.link != null}" th:href="@{${banner.link}}">
+						<img th:src="@{${banner.imageUrl}}"
+						class="w-full h-[420px] object-cover rounded-xl shadow">
+					</a> <img th:if="${banner.link == null}" th:src="@{${banner.imageUrl}}"
+						class="w-full h-[420px] object-cover rounded-xl shadow">
+				</div>
+
+			</div>
+
+
+			<!-- SÁCH MỚI -->
+			<section>
+				<h2 class="text-2xl font-extrabold mb-6">Sách hay mỗi ngày</h2>
+
+				<div class="grid grid-cols-5 gap-6">
+
+					<div th:each="b : ${newBooks}"
+						class="bg-white rounded-xl shadow p-4 group relative">
+
+						<!-- IMAGE -->
+						<div
+							class="relative h-[220px] bg-gray-200 rounded mb-3 overflow-hidden group">
+
+							<!-- Action buttons (trong suốt) -->
+							<div
+								class="absolute bottom-2 left-1/2 -translate-x-1/2
+                flex gap-2
+                opacity-0 group-hover:opacity-100
+                transition duration-300">
+
+								<!-- Xem chi tiết -->
+								<a th:href="@{/book/{id}(id=${b.id})}"
+									class="w-7 h-7 flex items-center justify-center
+                  rounded-full
+                  bg-white/60 backdrop-blur
+                  text-gray-700 text-sm
+                  hover:bg-primary hover:text-white
+                  transition shadow-sm">
+									👁️ </a>
+
+								<button
+									class="w-7 h-7 flex items-center justify-center
+           rounded-full bg-white/60 backdrop-blur
+           hover:bg-primary hover:text-white transition shadow-sm"
+									th:attr="data-book-id=${b.id}" onclick="addToCart(this)">
+									🛒</button>
+
+								<!-- Mua ngay -->
+								<a th:href="@{/checkout/{id}(id=${b.id})}"
+									class="w-7 h-7 flex items-center justify-center
+                  rounded-full
+                  bg-black/40 backdrop-blur
+                  text-white text-sm
+                  hover:bg-red-500
+                  transition shadow-sm">
+									⚡ </a>
+							</div>
+						</div>
+
+
+						<!-- INFO -->
+						<p class="font-bold text-sm" th:text="${b.title}"></p>
+						<p class="text-xs text-gray-400" th:text="${b.author}"></p>
+						<p class="font-bold text-primary mt-1"
+							th:text="${#numbers.formatDecimal(b.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+						</p>
+					</div>
+
+
+
+					<div th:if="${newBooks == null}"
+						class="col-span-5 text-center text-gray-400">Sách đang được
+						cập nhật...</div>
+
+				</div>
+			</section>
+
+			<!-- FLASH SALE -->
+			<section>
+				<h2 class="text-2xl font-extrabold mb-6 text-red-500">Flash
+					Sale</h2>
+
+				<div class="grid grid-cols-4 gap-6">
+					<div th:each="b : ${flashSale}"
+						class="bg-white h-[260px] rounded-xl shadow"></div>
+
+					<p th:if="${flashSale == null}" class="text-gray-400">Không có
+						chương trình Flash Sale</p>
+				</div>
+			</section>
+
+		</section>
+	</main>
+
+	<script th:inline="javascript">
+function addToCart(btn) {
+    const bookId = btn.getAttribute("data-book-id");
+
+    fetch(/*[[@{/cart/api/add}]]*/, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+            bookId: bookId,
+            quantity: 1
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            const cartCount = document.getElementById("cartCount");
+            if (cartCount) {
+                cartCount.innerText = data.cartCount;
+            }
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Lỗi khi thêm vào giỏ hàng");
+    });
+}
+</script>
+
+
+
+
+
+	<div th:replace="footer :: footer"></div>
+</body>
+</html>
