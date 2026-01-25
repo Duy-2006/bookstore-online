@@ -1,15 +1,14 @@
 package com.poly.java5.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.poly.java5.Entity.*;
-import com.poly.java5.Repository.*;
+import com.poly.java5.Entity.User;
+import com.poly.java5.Repository.UserRepository;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -33,7 +32,8 @@ public class AuthController {
     public String dangnhap(@RequestParam("username") String username, 
                         @RequestParam("password") String password,
                         Model model) {
-        User user = userRepo.findById(username).orElse(null);
+    	User user = userRepo.findByUsername(username);
+
         
         // Check pass thô (Trong thực tế phải dùng BCrypt)
         if (user != null && user.getPassword().equals(password)) {

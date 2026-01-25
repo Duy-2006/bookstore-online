@@ -1,32 +1,38 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-	th:replace="layout/seller-layout :: content">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/seller-layout}">
+<head>
+    <title>Danh sách đơn hàng - BOOKSTORE</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h3>Danh sách đơn hàng</h3>
 
-<h3>Danh sách đơn hàng</h3>
-
-<table class="table table-bordered mt-3">
-	<thead class="table-dark">
-		<tr>
-			<th>Mã đơn</th>
-			<th>Khách hàng</th>
-			<th>Ngày đặt</th>
-			<th>Trạng thái</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr>
-			<td>DH001</td>
-			<td>Nguyễn Văn A</td>
-			<td>23/01/2026</td>
-			<td><span class="badge bg-warning">Chờ xác nhận</span></td>
-		</tr>
-		<tr>
-			<td>DH002</td>
-			<td>Trần Thị B</td>
-			<td>23/01/2026</td>
-			<td><span class="badge bg-success">Đang giao</span></td>
-		</tr>
-		<!-- chỗ này quan trọng -->
-	</tbody>
-</table>
+        <table class="table table-bordered mt-3">
+            <thead class="table-dark">
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Ngày đặt</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>DH001</td>
+                    <td>Nguyễn Văn A</td>
+                    <td>23/01/2026</td>
+                    <td><span class="badge bg-warning">Chờ xác nhận</span></td>
+                </tr>
+                <tr>
+                    <td>DH002</td>
+                    <td>Trần Thị B</td>
+                    <td>23/01/2026</td>
+                    <td><span class="badge bg-success">Đang giao</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
 </html>

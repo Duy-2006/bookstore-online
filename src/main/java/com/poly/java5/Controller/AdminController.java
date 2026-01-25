@@ -302,9 +302,9 @@ public String updateOrderStatus(@PathVariable Integer id,
     }
     @GetMapping("/customers/toggle/{username}")
     public String toggleCustomer(@PathVariable("username") String username, RedirectAttributes params) {
-        if(!isAdmin()) return "redirect:/admin/customers"; // Chỉ Admin được khóa
-        
-        User user = userRepo.findById(username).orElse(null);
+        if(!isAdmin()) return "redirect:/admin/customers";
+
+        User user = userRepo.findByUsername(username);
         if (user != null) {
             user.setActive(!user.getActive());
             userRepo.save(user);
@@ -313,12 +313,14 @@ public String updateOrderStatus(@PathVariable Integer id,
         return "redirect:/admin/customers";
     }
 
+
     @GetMapping("/customers/history/{username}")
     public String customerHistory(@PathVariable("username") String username, Model model) {
-        User user = userRepo.findById(username).orElse(null);
+        User user = userRepo.findByUsername(username);
         model.addAttribute("customer", user);
         return "admin/customer-history";
     }
+
 
     // ================= QUẢN LÝ NHÂN SỰ (USERS) - CHỈ ADMIN =================
     @GetMapping("/users")
@@ -341,10 +343,12 @@ public String updateOrderStatus(@PathVariable Integer id,
     @GetMapping("/users/edit/{username}")
     public String editUser(@PathVariable("username") String username, Model model) {
         if (!isAdmin()) return "redirect:/admin";
-        User user = userRepo.findById(username).orElse(null);
+
+        User user = userRepo.findByUsername(username);
         model.addAttribute("user", user);
         return "admin/user-form";
     }
+
 
     @PostMapping("/users/save")
     public String saveUser(@Valid @ModelAttribute("user") User user, BindingResult result) {
@@ -360,15 +364,21 @@ public String updateOrderStatus(@PathVariable Integer id,
             params.addFlashAttribute("error", "Truy cập bị từ chối!");
             return "redirect:/admin";
         }
+
         User currentUser = (User) session.getAttribute("currentUser");
         if (currentUser.getUsername().equals(username)) {
             params.addFlashAttribute("error", "Không thể tự xóa tài khoản đang đăng nhập!");
             return "redirect:/admin/users";
         }
-        userRepo.deleteById(username);
-        params.addFlashAttribute("success", "Đã xóa nhân viên: " + username);
+
+        User user = userRepo.findByUsername(username);
+        if (user != null) {
+            userRepo.delete(user);
+            params.addFlashAttribute("success", "Đã xóa nhân viên: " + username);
+        }
         return "redirect:/admin/users";
     }
+
     
     
 }
