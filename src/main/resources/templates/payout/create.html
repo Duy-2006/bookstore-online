@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Chi trả cho người bán</title>
+</head>
+<body>
+    <h1>Chi trả</h1>
+    <form th:action="@{/payouts/process}" th:object="${payout}" method="post">
+        <label>Seller ID: <input type="text" th:field="*{sellerId}" /></label>
+        <span th:errors="*{sellerId}"></span><br/>
+        
+        <label>Amount: <input type="number" th:field="*{amount}" /></label>
+        <span th:errors="*{amount}"></span><br/>
+        
+        <label>Date: <input type="date" th:field="*{payoutDate}" /></label>
+        <span th:errors="*{payoutDate}"></span><br/>
+        
+        <button type="submit">Process Payout</button>
+    </form>
+</body>
+</html>

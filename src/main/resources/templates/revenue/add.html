@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Thêm doanh thu/hoa hồng</title>
+</head>
+<body>
+    <h1>Quản lý doanh thu</h1>
+    <form th:action="@{/revenues/save}" th:object="${revenue}" method="post">
+        <label>Date: <input type="date" th:field="*{date}" /></label>
+        <span th:errors="*{date}"></span><br/>
+        
+        <label>Total Revenue: <input type="number" th:field="*{totalRevenue}" /></label>
+        <span th:errors="*{totalRevenue}"></span><br/>
+        
+        <button type="submit">Save</button>
+    </form>
+    
+    <!-- Form tương tự cho Commission nếu cần -->
+</body>
+</html>

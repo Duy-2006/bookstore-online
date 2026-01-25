@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Tạo khuyến mãi</title>
+</head>
+<body>
+    <h1>Tạo chương trình khuyến mãi toàn sàn</h1>
+    <form th:action="@{/promotions/save}" th:object="${promotion}" method="post">
+        <label>Code: <input type="text" th:field="*{code}" /></label>
+        <span th:errors="*{code}"></span><br/>
+        
+        <label>Discount %: <input type="number" th:field="*{discountPercentage}" /></label>
+        <span th:errors="*{discountPercentage}"></span><br/>
+        
+        <label>Start Date: <input type="date" th:field="*{startDate}" /></label>
+        <span th:errors="*{startDate}"></span><br/>
+        
+        <label>End Date: <input type="date" th:field="*{endDate}" /></label>
+        <span th:errors="*{endDate}"></span><br/>
+        
+        <button type="submit">Create</button>
+    </form>
+</body>
+</html>
