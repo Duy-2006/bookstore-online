@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout/seller-layout :: content">
+
+<div class="card">
+    <div class="card-header bg-danger text-white">
+        Tạo chương trình khuyến mãi
+    </div>
+
+    <div class="card-body">
+        <form>
+            <div class="mb-3">
+                <label>Tên khuyến mãi</label>
+                <input class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label>Giảm giá (%)</label>
+                <input type="number" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label>Ngày bắt đầu</label>
+                <input type="date" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label>Ngày kết thúc</label>
+                <input type="date" class="form-control">
+            </div>
+
+            <button class="btn btn-danger">Lưu khuyến mãi</button>
+            <!-- chỗ này quan trọng -->
+        </form>
+    </div>
+</div>
+</html>

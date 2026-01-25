@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Seller</title>
+</head>
+<body>
+    <!-- Phần nội dung chính của dashboard, sẽ được chèn vào fragment "layout" -->
+    <div th:fragment="content">
+        <h3>Bảng Tổng Quát</h3>
+
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="card text-bg-primary">
+                    <div class="card-body">
+                        <h5>Tổng sách</h5>
+                        <h3>120</h3>
+                    </div>
+                </div>
+            </div>
+            <!-- các card khác giữ nguyên... -->
+            <!-- chỗ này quan trọng -->
+        </div>
+    </div>
+</body>
+</html>
