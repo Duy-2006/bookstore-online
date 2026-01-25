@@ -23,14 +23,14 @@ public class AuthController {
     HttpSession session;
 
     // Trang đăng nhập
-    @GetMapping("/login")
+    @GetMapping("/dangnhap")
     public String showLoginForm() {
         return "login"; // Trỏ đến file templates/login.html
     }
 
     // Xử lý đăng nhập
-    @PostMapping("/login")
-    public String login(@RequestParam("username") String username, 
+    @PostMapping("/dangnhap")
+    public String dangnhap(@RequestParam("username") String username, 
                         @RequestParam("password") String password,
                         Model model) {
         User user = userRepo.findById(username).orElse(null);

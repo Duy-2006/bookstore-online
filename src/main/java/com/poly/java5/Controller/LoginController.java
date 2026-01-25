@@ -50,20 +50,19 @@ public class LoginController {
 		Utils.setUserSession(user.getId(), request);
 		
 		// ===== KIỂM TRA SESSION =====
-		Integer sessionUserId = Utils.getUserIdFromSession(request);
-		System.out.println(">>> SESSION USER_ID = " + sessionUserId);
+		  System.out.println(">>> LOGIN SUCCESS | USER_ID = " + user.getId());
+		    System.out.println(">>> ROLE = " + user.getRole());
 
-		// 4. PHÂN QUYỀN THEO ROLE
-		if (user.isAdmin()) {
-			return "redirect:/register";
-		}
+		    // PHÂN QUYỀN
+		    switch (user.getRole()) {
+		        case ADMIN:
+		            return "redirect:/admin";
 
-		if (user.isSeller()) {
-			return "redirect:/seller";
-		}
+		        case SELLER:
+		            return "redirect:/seller";
 
-		// mặc định BUYER
-		return "redirect:/home";
-
+		        default:
+		            return "redirect:/home";
+		    }
 	}
 }

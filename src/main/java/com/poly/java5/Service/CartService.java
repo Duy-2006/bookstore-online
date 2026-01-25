@@ -67,7 +67,7 @@ public class CartService {
 			throw new RuntimeException("Sách không tồn tại");
 		}
 
-		if (book.getStockQuantity() < quantity) {
+		if (book.getQuantity() < quantity) {
 			throw new RuntimeException("Không đủ hàng trong kho");
 		}
 
@@ -126,7 +126,7 @@ public class CartService {
 				item.put("title", detail.getBook().getTitle());
 				item.put("author", detail.getBook().getAuthor());
 				item.put("imageUrl", detail.getBook().getImageUrl());
-				item.put("stockQuantity", detail.getBook().getStockQuantity());
+				item.put("stockQuantity", detail.getBook().getQuantity());
 
 				BigDecimal itemTotal = detail.getPrice().multiply(BigDecimal.valueOf(detail.getQuantity()));
 				item.put("itemTotal", itemTotal);
@@ -176,8 +176,8 @@ public class CartService {
 
 			// Kiểm tra số lượng trong kho
 			Book book = cartDetail.getBook();
-			if (book.getStockQuantity() < quantity) {
-				throw new RuntimeException("Số lượng trong kho không đủ. Chỉ còn: " + book.getStockQuantity());
+			if (book.getQuantity() < quantity) {
+				throw new RuntimeException("Số lượng trong kho không đủ. Chỉ còn: " + book.getQuantity());
 			}
 
 			// Cập nhật số lượng

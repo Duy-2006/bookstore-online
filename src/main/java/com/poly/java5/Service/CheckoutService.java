@@ -88,11 +88,11 @@ private String generateOrderCode() {
                 jakarta.persistence.LockModeType.PESSIMISTIC_WRITE
             );
 
-            if (book.getStockQuantity() < cd.getQuantity()) {
+            if (book.getQuantity() < cd.getQuantity()) {
                 throw new RuntimeException("Không đủ hàng: " + book.getTitle());
             }
 
-            book.setStockQuantity(book.getStockQuantity() - cd.getQuantity());
+            book.setQuantity(book.getQuantity() - cd.getQuantity());
 
             OrderDetail od = OrderDetail.builder()
                 .order(order)

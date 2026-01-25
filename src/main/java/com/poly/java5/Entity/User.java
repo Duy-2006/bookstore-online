@@ -1,51 +1,78 @@
 package com.poly.java5.Entity;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString; // Đã thêm import
 
 @Data
 @Entity
 @Table(name = "Users")
 public class User implements Serializable {
+	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-    @Id
-    @NotBlank(message = "Username không được để trống")
-    @Column(length = 50)
+    @Column(nullable = false, unique = true, length = 50)
     private String username;
 
-    @NotBlank(message = "Mật khẩu không được để trống")
+    @Column(nullable = false, length = 100)
     private String password;
 
-    @NotBlank(message = "Họ tên không được để trống")
-    private String fullname;
-
-    @Email(message = "Email không đúng định dạng")
+    @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(nullable = false)
-    private Boolean active = true;
+    @Column(name = "full_name", length = 100)
+    private String fullName;
+
+    @Column(length = 20)
+    private String phone;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role = UserRole.USER;
 
+    @Column(nullable = false)
+    private Boolean active = true;
+
+    @Column(name = "created_date")
+    private LocalDateTime createdDate;
+
+    // ===== RELATION =====
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @ToString.Exclude // QUAN TRỌNG: Tránh quét list Order khi in log User
+    @ToString.Exclude
     private List<Order> orders;
 
-    /* ================= BUSINESS LOGIC ================= */
+    @PrePersist
+    protected void onCreate() {
+        createdDate = LocalDateTime.now();
+    }
 
+    // ===== ROLE CHECK =====
+    public boolean isAdmin() {
+        return role == UserRole.ADMIN;
+    }
+
+    public boolean isSeller() {
+        return role == UserRole.SELLER;
+    }
+
+    public boolean isBuyer() {
+        return role == UserRole.USER;
+    }
+
+    // ===== BUSINESS =====
     public Double getTotalSpending() {
         if (orders == null || orders.isEmpty()) return 0.0;
         return orders.stream()
-                .filter(o -> o.getStatus() == OrderStatus.COMPLETED)
-                .mapToDouble(Order::getTotalAmount)
+                .filter(o -> "COMPLETED".equals(o.getStatus()))
+                .mapToDouble(o -> o.getTotalAmount().doubleValue())
                 .sum();
     }
 

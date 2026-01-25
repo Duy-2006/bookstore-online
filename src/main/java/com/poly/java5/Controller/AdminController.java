@@ -197,7 +197,7 @@ public class AdminController {
                 File saveFile = new ClassPathResource("static/images/books").getFile();
                 Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + filename);
                 Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-                book.setImage(filename);
+                book.setImageUrl(filename);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -216,7 +216,7 @@ public class AdminController {
 
         Book book = bookRepo.findById(id).orElse(null);
         if (book != null) {
-            book.setDeleted(true); // Soft delete
+//            book.setDeleted(true); // Soft delete
             bookRepo.save(book);
             params.addFlashAttribute("success", "Đã ẩn sách thành công!");
         }
@@ -257,55 +257,37 @@ public class AdminController {
     // ================= QUẢN LÝ ĐƠN HÀNG (ORDER) =================
     @GetMapping("/orders")
     public String listOrders(Model model) {
-        model.addAttribute("orders", orderRepo.findAllByOrderByCreateDateDesc());
+        model.addAttribute("orders", orderRepo.findAllByOrderByOrderDateDesc());
         return "admin/orders";
     }
 
     @GetMapping("/orders/detail/{id}")
-    public String detailOrder(@PathVariable("id") Long id, Model model) {
-        Order order = orderRepo.findById(id).orElse(null);
+    public String detailOrder(@PathVariable("id") Integer id, Model model) {
+    	Order order = orderRepo.findById(id).orElse(null);
         model.addAttribute("order", order);
         return "admin/order-detail";
     }
 
-    @PostMapping("/orders/update/{id}")
-    public String updateOrderStatus(@PathVariable("id") Long id, 
-                                    @RequestParam("status") OrderStatus status,
-                                    RedirectAttributes params) {
-        Order order = orderRepo.findById(id).orElse(null);
-        if (order != null) {
-            OrderStatus oldStatus = order.getStatus();
+    
+@PostMapping("/orders/update/{id}")
+public String updateOrderStatus(@PathVariable Integer id,
+                                @RequestParam String status,
+                                RedirectAttributes ra) {
 
-            // LOGIC 1: Khi đơn hàng chuyển sang COMPLETED (Hoàn thành) -> TRỪ KHO
-            if (status == OrderStatus.COMPLETED && oldStatus != OrderStatus.COMPLETED) {
-                for (OrderDetail detail : order.getOrderDetails()) {
-                    Book book = detail.getBook();
-                    if (book.getQuantity() < detail.getQuantity()) {
-                        params.addFlashAttribute("error", "Lỗi: Sách [" + book.getTitle() + "] không đủ tồn kho!");
-                        return "redirect:/admin/orders/detail/" + id;
-                    }
-                    book.setQuantity(book.getQuantity() - detail.getQuantity());
-                    bookRepo.save(book);
-                    inventoryRepo.save(new InventoryLog(book, -detail.getQuantity(), "SALE", "Bán đơn #" + id));
-                }
-            }
-            
-            // LOGIC 2: Nếu đơn đang COMPLETED mà bị chuyển thành CANCELLED -> TRẢ HÀNG
-            if (oldStatus == OrderStatus.COMPLETED && status == OrderStatus.CANCELLED) {
-                 for (OrderDetail detail : order.getOrderDetails()) {
-                    Book book = detail.getBook();
-                    book.setQuantity(book.getQuantity() + detail.getQuantity());
-                    bookRepo.save(book);
-                    inventoryRepo.save(new InventoryLog(book, detail.getQuantity(), "CANCEL", "Khách hủy đơn #" + id));
-                 }
-            }
-
-            order.setStatus(status);
-            orderRepo.save(order);
-            params.addFlashAttribute("success", "Cập nhật trạng thái đơn #" + id + " thành công!");
-        }
-        return "redirect:/admin/orders/detail/" + id;
+    Order order = orderRepo.findById(id).orElse(null);
+    if (order == null) {
+        ra.addFlashAttribute("error", "Không tìm thấy đơn hàng");
+        return "redirect:/admin/orders";
     }
+
+    order.setStatus(status);
+    orderRepo.save(order);
+
+    ra.addFlashAttribute("success", "Cập nhật trạng thái thành công");
+    return "redirect:/admin/orders/detail/" + id;
+}
+
+
 
     // ================= QUẢN LÝ KHÁCH HÀNG (CUSTOMERS) =================
     @GetMapping("/customers")
