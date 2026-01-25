@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Khởi tạo thanh toán</title>
+</head>
+<body>
+    <h1>Tích hợp cổng thanh toán</h1>
+    <form th:action="@{/payments/process}" th:object="${payment}" method="post">
+        <label>Order ID: <input type="text" th:field="*{orderId}" /></label>
+        <span th:if="${#fields.hasErrors('orderId')}" th:errors="*{orderId}"></span><br/>
+        
+        <label>Amount: <input type="number" th:field="*{amount}" /></label>
+        <span th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></span><br/>
+        
+        <label>Status: <input type="text" th:field="*{status}" /></label>
+        <span th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></span><br/>
+        
+        <label>Gateway: <input type="text" th:field="*{paymentGateway}" /></label><br/>
+        
+        <button type="submit">Process Payment</button>
+    </form>
+</body>
+</html>

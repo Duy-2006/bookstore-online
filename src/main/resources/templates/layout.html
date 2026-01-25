@@ -87,6 +87,47 @@
                             <i class="fa-solid fa-users me-2"></i> Khách hàng
                         </a>
                     </li>
+                    
+                    <div class="sidebar-heading">Quản lý Thanh toán</div>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/payments/init">
+                            <i class="fa-solid fa-warehouse me-2"></i> Tích hợp & Xử lý thanh toán
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="revenues">
+                            <i class="fa-solid fa-cart-shopping me-2"></i> Doanh thu & Hoa hồng
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/payouts/create">
+                            <i class="fa-solid fa-users me-2"></i> Chi trả cho người bán
+                        </a>
+                    </li>
+                    
+                     <div class="sidebar-heading">Marketing & Khuyến mại</div>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/promotions/create">
+                            <i class="fa-solid fa-warehouse me-2"></i> Tạo chương trình khuyến mãi
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/promotions/list">
+                            <i class="fa-solid fa-cart-shopping me-2"></i> Danh sách khuyến mãi
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/featured/add">
+                            <i class="fa-solid fa-users me-2"></i> Quảng bá sản phẩm nổi bật
+                        </a>
+                    </li>
+                     <li class="nav-item">
+                        <a class="nav-link" href="/featured/list">
+                            <i class="fa-solid fa-users me-2"></i> Danh sách sản phẩm nổi bật
+                        </a>
+                    </li>
 
                     <th:block th:if="${session.currentUser != null and session.currentUser.role.name() == 'ADMIN'}">
                         <div class="sidebar-heading text-danger">Hệ thống</div>
