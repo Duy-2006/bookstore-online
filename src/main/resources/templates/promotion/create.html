@@ -1,24 +1,141 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Tạo khuyến mãi</title>
-</head>
-<body>
-    <h1>Tạo chương trình khuyến mãi toàn sàn</h1>
-    <form th:action="@{/promotions/save}" th:object="${promotion}" method="post">
-        <label>Code: <input type="text" th:field="*{code}" /></label>
-        <span th:errors="*{code}"></span><br/>
-        
-        <label>Discount %: <input type="number" th:field="*{discountPercentage}" /></label>
-        <span th:errors="*{discountPercentage}"></span><br/>
-        
-        <label>Start Date: <input type="date" th:field="*{startDate}" /></label>
-        <span th:errors="*{startDate}"></span><br/>
-        
-        <label>End Date: <input type="date" th:field="*{endDate}" /></label>
-        <span th:errors="*{endDate}"></span><br/>
-        
-        <button type="submit">Create</button>
-    </form>
-</body>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="admin/layout :: admin_layout(~{::content})">
+
+<th:block th:fragment="content">
+
+<style>
+    .promo-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-top: 40px;
+    }
+
+    .promo-card {
+        background: #ffffff;
+        width: 100%;
+        max-width: 440px;
+        padding: 28px;
+        border-radius: 14px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    }
+
+    .promo-card h3 {
+        text-align: center;
+        margin-bottom: 24px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    label {
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 6px;
+    }
+
+    input {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    }
+
+    .error {
+        font-size: 13px;
+        color: #dc2626;
+        margin-top: 4px;
+    }
+
+    .date-row {
+        display: flex;
+        gap: 12px;
+    }
+
+    button {
+        width: 100%;
+        margin-top: 10px;
+        padding: 12px;
+        background: linear-gradient(135deg, #6366f1, #22c55e);
+        border: none;
+        border-radius: 10px;
+        color: #fff;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .note {
+        text-align: center;
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 14px;
+    }
+</style>
+
+<div class="promo-wrapper">
+    <div class="promo-card">
+
+        <h3>
+            <i class="fa-solid fa-tags text-success"></i>
+            Tạo khuyến mãi toàn sàn
+        </h3>
+
+        <form th:action="@{/promotions/save}"
+              th:object="${promotion}"
+              method="post">
+
+            <div class="form-group">
+                <label>Mã khuyến mãi</label>
+                <input type="text"
+                       th:field="*{code}"
+                       placeholder="VD: SALE10"/>
+                <div class="error" th:errors="*{code}"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Giảm giá (%)</label>
+                <input type="number"
+                       th:field="*{discountPercentage}"
+                       placeholder="VD: 10"/>
+                <div class="error" th:errors="*{discountPercentage}"></div>
+            </div>
+
+            <div class="date-row">
+                <div class="form-group">
+                    <label>Ngày bắt đầu</label>
+                    <input type="date" th:field="*{startDate}"/>
+                    <div class="error" th:errors="*{startDate}"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Ngày kết thúc</label>
+                    <input type="date" th:field="*{endDate}"/>
+                    <div class="error" th:errors="*{endDate}"></div>
+                </div>
+            </div>
+
+            <button type="submit">
+                <i class="fa-solid fa-circle-plus"></i>
+                Tạo khuyến mãi
+            </button>
+
+            <div class="note">
+                Khuyến mãi sẽ tự động áp dụng trong thời gian hiệu lực
+            </div>
+        </form>
+    </div>
+</div>
+
+</th:block>
 </html>

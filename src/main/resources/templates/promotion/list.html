@@ -1,11 +1,169 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Danh sách khuyến mãi</title>
-</head>
-<body>
-    <h1>Danh sách chương trình khuyến mãi</h1>
-    <!-- Placeholder cho table -->
-    <a href="/promotions/create">Tạo mới</a>
-</body>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="admin/layout :: admin_layout(~{::content})">
+
+<th:block th:fragment="content">
+
+<style>
+    .promo-container {
+        max-width: 1100px;
+        margin: auto;
+    }
+
+    .promo-card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        padding: 24px;
+    }
+
+    .promo-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .promo-header h3 {
+        font-size: 20px;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+    }
+
+    .btn-create {
+        background: linear-gradient(135deg, #6366f1, #22c55e);
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    thead {
+        background: #f9fafb;
+    }
+
+    th, td {
+        padding: 14px 12px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    th {
+        font-weight: 600;
+        color: #374151;
+    }
+
+    tbody tr:hover {
+        background: #f3f4f6;
+    }
+
+    .badge {
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-active {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-expired {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .actions a {
+        margin-right: 6px;
+        font-size: 13px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        color: #374151;
+        text-decoration: none;
+    }
+
+    .actions a:hover {
+        background: #111827;
+        color: #fff;
+    }
+
+    .empty {
+        text-align: center;
+        padding: 40px;
+        color: #6b7280;
+        font-size: 15px;
+    }
+</style>
+
+<div class="promo-container">
+    <div class="promo-card">
+
+        <div class="promo-header">
+            <h3>
+                <i class="fa-solid fa-tags text-success"></i>
+                Danh sách chương trình khuyến mãi
+            </h3>
+
+            <a th:href="@{/promotions/create}" class="btn-create">
+                + Tạo mới
+            </a>
+        </div>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Mã</th>
+                <th>Giảm (%)</th>
+                <th>Ngày bắt đầu</th>
+                <th>Ngày kết thúc</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <!-- CHƯA CÓ DỮ LIỆU -->
+            <tr th:if="${#lists.isEmpty(promotions)}">
+                <td colspan="6" class="empty">
+                    Chưa có chương trình khuyến mãi nào
+                </td>
+            </tr>
+
+            <!-- CÓ DỮ LIỆU -->
+            <tr th:each="p : ${promotions}">
+                <td th:text="${p.code}"></td>
+                <td th:text="${p.discountPercentage + '%'}"></td>
+                <td th:text="${p.startDate}"></td>
+                <td th:text="${p.endDate}"></td>
+
+                <td>
+                    <span th:if="${p.active}" class="badge badge-active">Đang chạy</span>
+                    <span th:unless="${p.active}" class="badge badge-expired">Hết hạn</span>
+                </td>
+
+                <td class="actions">
+                    <a th:href="@{/admin/promotions/edit/{id}(id=${p.id})}">Sửa</a>
+                    <a th:href="@{/admin/promotions/delete/{id}(id=${p.id})}"
+                       onclick="return confirm('Xóa khuyến mãi này?')">
+                        Xóa
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+</th:block>
 </html>

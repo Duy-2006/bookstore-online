@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="admin/layout :: admin_layout(~{::content})">
+
+<th:block th:fragment="content">
+
+<h3 class="mb-3">
+    <i class="fa-solid fa-fire text-danger"></i> Sách bán chạy nhất
+</h3>
+
+<table class="table table-bordered align-middle">
+    <thead class="table-dark">
+    <tr>
+        <th>#</th>
+        <th>Tên sách</th>
+        <th>Tác giả</th>
+        <th>Đã bán</th>
+        <th>Giá</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="row, stat : ${bestSellers}">
+        <td th:text="${stat.count}"></td>
+
+        <td th:text="${row[0].title}"></td>
+        <td th:text="${row[0].author}"></td>
+
+        <td>
+            <span class="badge bg-danger" th:text="${row[1]}"></span>
+        </td>
+
+        <td th:text="${#numbers.formatDecimal(row[0].price,0,'COMMA',0,'POINT')} + ' đ'"></td>
+    </tr>
+    </tbody>
+</table>
+
+</th:block>
+</html>

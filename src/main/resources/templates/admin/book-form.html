@@ -1,88 +1,134 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" 
-      th:replace="~{layout :: admin_layout(~{::section})}">
-<head><title>Cập nhật Sách</title></head>
-<body>
-    <section>
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h4 class="m-0" th:text="${book.id == null ? 'Thêm Sách Mới' : 'Cập Nhật Sách'}"></h4>
-            </div>
-            <div class="card-body">
-                <form th:action="@{/admin/books/save}" th:object="${book}" method="post" enctype="multipart/form-data">
-                    <input type="hidden" th:field="*{id}">
-                    <input type="hidden" th:field="*{image}"> <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Tên sách (*):</label>
-                            <input type="text" class="form-control" th:field="*{title}" 
-                                   th:classappend="${#fields.hasErrors('title')} ? 'is-invalid' : ''">
-                            <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">ISBN (*):</label>
-                            <input type="text" class="form-control" th:field="*{isbn}"
-                                   th:classappend="${#fields.hasErrors('isbn')} ? 'is-invalid' : ''">
-                            <div class="invalid-feedback" th:if="${#fields.hasErrors('isbn')}" th:errors="*{isbn}"></div>
-                        </div>
-                    </div>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="admin/layout :: admin_layout(~{::content})">
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Tác giả:</label>
-                            <select class="form-select" th:field="*{author}">
-                                <option value="" disabled selected>-- Chọn tác giả --</option>
-                                <option th:each="au : ${authors}" 
-                                        th:value="${au.id}" 
-                                        th:text="${au.name}"></option>
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Thể loại:</label>
-                            <select class="form-select" th:field="*{category}">
-                                <option value="" disabled selected>-- Chọn thể loại --</option>
-                                <option th:each="cat : ${categories}" 
-                                        th:value="${cat.id}" 
-                                        th:text="${cat.name}"></option>
-                            </select>
-                        </div>
-                    </div>
+<th:block th:fragment="content">
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Giá bán (VNĐ):</label>
-                            <input type="number" class="form-control" th:field="*{salePrice}" min="0">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Số lượng tồn kho:</label>
-                            <input type="number" class="form-control" th:field="*{quantity}" min="0">
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Hình ảnh bìa:</label>
-                        <input type="file" name="imageFile" class="form-control" accept="image/*">
-                        <div th:if="${book.image != null}" class="mt-2">
-                            <img th:src="@{'/images/books/' + ${book.image}}" width="100" class="img-thumbnail rounded">
-                            <small class="text-muted d-block">Ảnh hiện tại</small>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Mô tả chi tiết:</label>
-                        <textarea class="form-control" th:field="*{description}" rows="3"></textarea>
-                    </div>
-
-                    <div class="form-check mb-4">
-                        <input class="form-check-input" type="checkbox" th:field="*{active}">
-                        <label class="form-check-label">Đang kinh doanh (Active)</label>
-                    </div>
-
-                    <button type="submit" class="btn btn-success"><i class="fa-solid fa-save"></i> Lưu lại</button>
-                    <a href="/admin/books" class="btn btn-secondary">Hủy bỏ</a>
-                </form>
-            </div>
+<section>
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="m-0"
+                th:text="${book.id == null ? 'Thêm Sách Mới' : 'Cập Nhật Sách'}"></h4>
         </div>
-    </section>
-</body>
+
+        <div class="card-body">
+            <form th:action="@{/admin/books/save}"
+                  th:object="${book}"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                <input type="hidden" th:field="*{id}"/>
+
+                <!-- ===== TÊN + ISBN ===== -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Tên sách *</label>
+                        <input type="text" class="form-control"
+                               th:field="*{title}"
+                               th:classappend="${#fields.hasErrors('title')} ? 'is-invalid' : ''">
+                        <div class="invalid-feedback" th:errors="*{title}"></div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">ISBN *</label>
+                        <input type="text" class="form-control"
+                               th:field="*{isbn}"
+                               th:classappend="${#fields.hasErrors('isbn')} ? 'is-invalid' : ''">
+                        <div class="invalid-feedback" th:errors="*{isbn}"></div>
+                    </div>
+                </div>
+
+                <!-- ===== TÁC GIẢ + NXB ===== -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Tác giả</label>
+                        <select class="form-select" th:field="*{author}">
+                            <option value="">-- Chọn tác giả --</option>
+                            <option th:each="a : ${authors}"
+                                    th:value="${a.id}"
+                                    th:text="${a.name}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Nhà xuất bản</label>
+                        <input type="text" class="form-control"
+                               th:field="*{publisher}">
+                    </div>
+                </div>
+
+                <!-- ===== GIÁ + SỐ LƯỢNG ===== -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Giá bán (VNĐ) *</label>
+                        <input type="number" class="form-control"
+                               th:field="*{price}"
+                               min="0" step="0.01"
+                               th:classappend="${#fields.hasErrors('price')} ? 'is-invalid' : ''">
+                        <div class="invalid-feedback" th:errors="*{price}"></div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Số lượng tồn kho *</label>
+                        <input type="number" class="form-control"
+                               th:field="*{quantity}"
+                               min="0"
+                               th:classappend="${#fields.hasErrors('quantity')} ? 'is-invalid' : ''">
+                        <div class="invalid-feedback" th:errors="*{quantity}"></div>
+                    </div>
+                </div>
+
+                <!-- ===== THỂ LOẠI ===== -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Thể loại</label>
+                    <select class="form-select" th:field="*{category}">
+                        <option value="">-- Chọn thể loại --</option>
+                        <option th:each="cat : ${categories}"
+                                th:value="${cat.id}"
+                                th:text="${cat.name}">
+                        </option>
+                    </select>
+                </div>
+
+                <!-- ===== HÌNH ẢNH ===== -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Ảnh bìa</label>
+                    <input type="file" name="imageFile"
+                           class="form-control" accept="image/*">
+
+                    <div th:if="${book.imageUrl != null}" class="mt-2">
+                        <img th:src="@{/images/books/{img}(img=${book.imageUrl})}"
+                             width="120" class="img-thumbnail">
+                        <small class="text-muted d-block">Ảnh hiện tại</small>
+                    </div>
+                </div>
+
+                <!-- ===== MÔ TẢ ===== -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Mô tả</label>
+                    <textarea class="form-control"
+                              th:field="*{description}" rows="3"></textarea>
+                </div>
+
+                <!-- ===== TRẠNG THÁI ===== -->
+                <div class="form-check mb-4">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           th:field="*{active}">
+                    <label class="form-check-label">Đang kinh doanh</label>
+                </div>
+
+                <!-- ===== BUTTON ===== -->
+                <button type="submit" class="btn btn-success">
+                    <i class="fa-solid fa-save"></i> Lưu
+                </button>
+                <a th:href="@{/admin/books}" class="btn btn-secondary">Hủy</a>
+
+            </form>
+        </div>
+    </div>
+</section>
+
+</th:block>
 </html>

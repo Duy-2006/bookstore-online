@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	th:fragment="admin_layout(content)">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BookStore Online Management</title>
+
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+	rel="stylesheet">
+
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+.nav-link {
+	color: #333;
+	font-weight: 500;
+}
+
+.nav-link:hover {
+	background-color: #e9ecef;
+	color: #000;
+}
+
+.nav-link.active {
+	background-color: #0d6efd;
+	color: white;
+}
+
+.sidebar-heading {
+	font-size: 0.85rem;
+	text-transform: uppercase;
+	font-weight: bold;
+	color: #6c757d;
+	margin-top: 1rem;
+	margin-bottom: 0.5rem;
+	padding-left: 1rem;
+}
+</style>
+</head>
+<body class="bg-light">
+
+	<nav
+		class="navbar navbar-expand-lg navbar-dark bg-primary px-3 shadow-sm sticky-top">
+		<a class="navbar-brand fw-bold" href="/admin"> <i
+			class="fa-solid fa-book-open"></i> BOOKSTORE
+		</a>
+
+		<div class="collapse navbar-collapse justify-content-end">
+			<ul class="navbar-nav">
+				<li class="nav-item dropdown"><a
+					class="nav-link dropdown-toggle" href="#" role="button"
+					data-bs-toggle="dropdown"> <i class="fa-solid fa-user-circle"></i>
+						<span
+						th:text="${session.currentUser != null ? session.currentUser.fullname : 'Tài khoản'}">Admin</span>
+				</a>
+					<ul class="dropdown-menu dropdown-menu-end">
+						<li><a class="dropdown-item" href="#">Hồ sơ cá nhân</a></li>
+						<li><hr class="dropdown-divider"></li>
+						<li><a class="dropdown-item text-danger" href="/logout"><i
+								class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a></li>
+					</ul></li>
+			</ul>
+		</div>
+	</nav>
+
+	<div class="container-fluid">
+		<div class="row">
+
+			<div
+				class="col-md-2 bg-white vh-100 p-3 shadow-sm d-none d-md-block position-fixed"
+				style="overflow-y: auto;">
+				<ul class="nav flex-column nav-pills">
+
+					<li class="nav-item"><a class="nav-link" href="/admin"> <i
+							class="fa-solid fa-gauge me-2"></i> Dashboard
+					</a></li>
+
+					<div class="sidebar-heading">Danh mục sản phẩm</div>
+
+					<li class="nav-item"><a class="nav-link"
+						href="/admin/categories"> <i class="fa-solid fa-list me-2"></i>
+							Thể loại
+					</a></li>
+					<li class="nav-item"><a class="nav-link" href="/admin/authors">
+							<i class="fa-solid fa-pen-nib me-2"></i> Tác giả
+					</a></li>
+					<li class="nav-item"><a class="nav-link" href="/admin/books">
+							<i class="fa-solid fa-book me-2"></i> Sách
+					</a></li>
+
+					<div class="sidebar-heading">Kinh doanh</div>
+
+					<li class="nav-item"><a class="nav-link"
+						href="/admin/inventory"> <i class="fa-solid fa-warehouse me-2"></i>
+							Kho hàng
+					</a></li>
+					<li class="nav-item"><a class="nav-link" href="/admin/orders">
+							<i class="fa-solid fa-cart-shopping me-2"></i> Đơn hàng
+					</a></li>
+					<li class="nav-item"><a class="nav-link"
+						href="/admin/customers"> <i class="fa-solid fa-users me-2"></i>
+							Khách hàng
+					</a></li>
+
+					<div class="sidebar-heading">Quản lý Thanh toán</div>
+
+					<li class="nav-item"><a class="nav-link" href="/revenues">
+							<i class="fa-solid fa-cart-shopping me-2"></i> Doanh thu & Hoa
+							hồng
+					</a></li>
+
+					<div class="sidebar-heading">Marketing & Khuyến mại</div>
+
+					<li class="nav-item"><a class="nav-link"
+						href="/promotions/create"> <i
+							class="fa-solid fa-warehouse me-2"></i> Tạo chương trình khuyến
+							mãi
+					</a></li>
+					<li class="nav-item"><a class="nav-link"
+						href="/promotions/list"> <i
+							class="fa-solid fa-cart-shopping me-2"></i> Danh sách khuyến mãi
+					</a></li>
+					<li class="nav-item"><a class="nav-link"
+						th:href="@{/featured/bestseller}"> <i
+							class="fa-solid fa-fire me-2"></i> Sách bán chạy
+					</a></li>
+
+
+					<th:block
+						th:if="${session.currentUser != null and session.currentUser.role.name() == 'ADMIN'}">
+						<div class="sidebar-heading text-danger">Hệ thống</div>
+						<li class="nav-item"><a class="nav-link text-danger"
+							href="/admin/users"> <i class="fa-solid fa-user-shield me-2"></i>
+								Quản lý Nhân viên
+						</a></li>
+					</th:block>
+
+				</ul>
+			</div>
+
+			<div class="col-md-10 offset-md-2 p-4">
+				<div th:replace="${content}"></div>
+
+
+			</div>
+
+		</div>
+	</div>
+
+	<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

@@ -8,6 +8,7 @@ import java.util.List;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString; // Đã thêm import này
@@ -29,20 +30,22 @@ public class Book {
     private String isbn;
     
     
-//    @ManyToOne
-    @NotBlank(message = "Tác giả không được để trống")
-    @Column(name = "author")
-    @ToString.Exclude // Ngắt toString tại đây để tránh vòng lặp với Author
-    private String author;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false,
+            foreignKey = @ForeignKey(name = "FK_Books_Author"))
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Author author;
 
     @Column(name = "publisher", length = 100)
     private String publisher;
-
+    
+    @NotNull(message = "Giá bán không được để trống")
     @Min(value = 0, message = "Giá nhập phải dương")
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-
+    @NotNull(message = "Số lượng không được để trống")
     @Min(value = 0, message = "Số lượng phải dương")
     @Column(name = "stock_quantity")
     private Integer quantity;

@@ -1,15 +1,84 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Quản lý doanh thu và hoa hồng</title>
-</head>
-<body>
-    <h1>Danh sách doanh thu</h1>
-    <!-- Placeholder cho table -->
-    <table>
-        <tr><th>ID</th><th>Date</th><th>Total</th></tr>
-        <!-- Thêm th:each nếu có data -->
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="admin/layout :: admin_layout(~{::content})">
+
+<th:block th:fragment="content">
+
+<!-- CSS RIÊNG cho trang -->
+<style>
+    .revenue-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .revenue-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .btn-add {
+        background: linear-gradient(135deg, #6366f1, #22c55e);
+        color: #fff;
+        padding: 8px 14px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .btn-add:hover {
+        opacity: 0.95;
+    }
+
+    .total {
+        font-weight: 600;
+        color: #16a34a;
+    }
+</style>
+
+<div class="revenue-card">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="revenue-title">
+            <i class="fa-solid fa-chart-line text-success"></i>
+            Quản lý doanh thu
+        </h3>
+
+        <a href="/revenues/add" class="btn-add">
+            <i class="fa-solid fa-plus"></i> Thêm doanh thu
+        </a>
+    </div>
+
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Ngày</th>
+                <th>Tổng doanh thu</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr th:if="${#lists.isEmpty(revenues)}">
+                <td colspan="3" class="text-center text-muted py-4">
+                    Chưa có dữ liệu doanh thu
+                </td>
+            </tr>
+
+            <tr th:each="r : ${revenues}">
+                <td th:text="${r.id}"></td>
+                <td th:text="${r.date}"></td>
+                <td class="total"
+                    th:text="${#numbers.formatDecimal(r.totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                </td>
+            </tr>
+        </tbody>
     </table>
-    <a href="/revenues/add">Thêm mới</a>
-</body>
+
+</div>
+
+</th:block>
 </html>

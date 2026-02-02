@@ -1,5 +1,7 @@
 package com.poly.java5.Controller;
 
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -20,7 +22,7 @@ public class RevenueController {
     @GetMapping
     public String listRevenues(Model model) {
         // Chưa logic: Lấy list từ DB
-        model.addAttribute("revenues", new Revenue()); // Placeholder
+        model.addAttribute("revenues", List.of()); // Placeholder
         return "revenue/list";
     }
 

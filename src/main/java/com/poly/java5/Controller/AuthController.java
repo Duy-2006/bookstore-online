@@ -33,7 +33,7 @@ public class AuthController {
     public String dangnhap(@RequestParam("username") String username, 
                         @RequestParam("password") String password,
                         Model model) {
-        User user = userRepo.findById(username).orElse(null);
+        User user = userRepo.findByUsername(username);
         
         // Check pass thô (Trong thực tế phải dùng BCrypt)
         if (user != null && user.getPassword().equals(password)) {
