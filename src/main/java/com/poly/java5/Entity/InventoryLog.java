@@ -1,36 +1,43 @@
 package com.poly.java5.Entity;
 
-import java.util.Date;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "InventoryLogs")
-public class InventoryLog {
+@Table(name = "InventoryLogs") // <--- QUAN TRỌNG: Khớp 100% với tên bảng SQL Server
+public class InventoryLog implements Serializable {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @ManyToOne
     @JoinColumn(name = "book_id")
     private Book book;
 
-    private Integer changeAmount; // Số lượng thay đổi (Dương là nhập, Âm là bán)
-    
-    private String type; // "IMPORT" (Nhập) hoặc "SALE" (Bán) hoặc "CANCEL" (Hủy đơn trả hàng)
-    
-    private String note; // Ghi chú (Ví dụ: Nhập hàng đợt 1, Bán cho đơn #10)
+    @Column(name = "change_amount") // Khớp cột SQL 'change_amount'
+    private Integer changeAmount;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date logDate = new Date();
+    @Column(length = 20)
+    private String type; // IMPORT / EXPORT
 
-    // Constructor tiện lợi
-    public InventoryLog() {}
-    public InventoryLog(Book book, Integer changeAmount, String type, String note) {
-        this.book = book;
-        this.changeAmount = changeAmount;
-        this.type = type;
-        this.note = note;
+    @Column(length = 255)
+    private String note;
+
+    @Column(name = "log_date") // Khớp cột SQL 'log_date'
+    private LocalDateTime logDate;
+
+    @PrePersist
+    public void onCreate() {
+        if (logDate == null) {
+            logDate = LocalDateTime.now();
+        }
     }
 }
