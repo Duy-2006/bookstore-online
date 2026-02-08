@@ -1,7 +1,9 @@
 // File: OrderDetailRepository.java
 package com.poly.java5.Repository;
+
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -16,4 +18,12 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Intege
 		        ORDER BY SUM(od.quantity) DESC
 		    """)
 		    List<Object[]> findBestSellerBooks();
+		    
+		    
+		    @Query("SELECT od.book.id, od.book.title, SUM(od.quantity) " +
+		    	       "FROM OrderDetail od " +
+		    	       "GROUP BY od.book.id, od.book.title " +
+		    	       "ORDER BY SUM(od.quantity) DESC")
+		    	List<Object[]> findTopSellingBooks(Pageable pageable);
+
 }

@@ -109,12 +109,9 @@
     <div class="promo-card">
 
         <div class="promo-header">
-            <h3>
-                <i class="fa-solid fa-tags text-success"></i>
-                Danh sách chương trình khuyến mãi
-            </h3>
+            <h3>Danh sách chương trình khuyến mãi</h3>
 
-            <a th:href="@{/promotions/create}" class="btn-create">
+            <a th:href="@{/admin/promotions/create}" class="btn-create">
                 + Tạo mới
             </a>
         </div>
@@ -122,8 +119,10 @@
         <table>
             <thead>
             <tr>
-                <th>Mã</th>
-                <th>Giảm (%)</th>
+                <th>ID</th>
+                <th>Tên</th>
+                <th>Loại giảm</th>
+                <th>Giá trị</th>
                 <th>Ngày bắt đầu</th>
                 <th>Ngày kết thúc</th>
                 <th>Trạng thái</th>
@@ -132,23 +131,36 @@
             </thead>
 
             <tbody>
-            <!-- CHƯA CÓ DỮ LIỆU -->
+
+            <!-- chưa có -->
             <tr th:if="${#lists.isEmpty(promotions)}">
-                <td colspan="6" class="empty">
+                <td colspan="8" class="empty">
                     Chưa có chương trình khuyến mãi nào
                 </td>
             </tr>
 
-            <!-- CÓ DỮ LIỆU -->
+            <!-- có dữ liệu -->
             <tr th:each="p : ${promotions}">
-                <td th:text="${p.code}"></td>
-                <td th:text="${p.discountPercentage + '%'}"></td>
+                <td th:text="${p.id}"></td>
+                <td th:text="${p.name}"></td>
+
+                <td th:text="${p.discountType == 'PERCENT' ? 'Giảm %' : 'Giảm tiền'}"></td>
+
+                <td>
+                    <span th:if="${p.discountType == 'PERCENT'}"
+                          th:text="${p.discountValue + '%'}"></span>
+
+                    <span th:if="${p.discountType == 'AMOUNT'}"
+                          th:text="${#numbers.formatDecimal(p.discountValue,0,'COMMA',0,'POINT')} + ' đ'">
+                    </span>
+                </td>
+
                 <td th:text="${p.startDate}"></td>
                 <td th:text="${p.endDate}"></td>
 
                 <td>
-                    <span th:if="${p.active}" class="badge badge-active">Đang chạy</span>
-                    <span th:unless="${p.active}" class="badge badge-expired">Hết hạn</span>
+                    <span th:if="${p.status}" class="badge badge-active">Đang chạy</span>
+                    <span th:unless="${p.status}" class="badge badge-expired">Tắt</span>
                 </td>
 
                 <td class="actions">
@@ -159,6 +171,7 @@
                     </a>
                 </td>
             </tr>
+
             </tbody>
         </table>
 
