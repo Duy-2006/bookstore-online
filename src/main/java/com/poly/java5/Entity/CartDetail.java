@@ -34,8 +34,19 @@ public class CartDetail {
 	    @Column(name = "price")
 	    private BigDecimal price;
 	    
+	    @Column(name = "selected", nullable = false)
+	    private Boolean selected = false;
+
+	    @PrePersist
+	    @PreUpdate
+	    public void prePersist() {
+	        if (selected == null) {
+	            selected = false;
+	        }
+	    }
 	    // Tính tổng tiền cho item này
 	    public BigDecimal calculateTotal() {
-	        return book.getPrice().multiply(BigDecimal.valueOf(quantity));
+	        return price.multiply(BigDecimal.valueOf(quantity));
 	    }
+
 }

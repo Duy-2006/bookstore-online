@@ -77,7 +77,7 @@ public class BookController {
 
 	        try {
 	            List<Book> books = bookService.searchBooks(
-	                    title, author, category, isbn
+	                    title
 	            );
 
 	            response.put("success", true);

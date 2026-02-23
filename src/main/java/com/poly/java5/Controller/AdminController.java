@@ -254,7 +254,7 @@ public class AdminController {
 	// ================= QUẢN LÝ ĐƠN HÀNG (ORDER) =================
 	@GetMapping("/orders")
 	public String listOrders(Model model) {
-		model.addAttribute("orders", orderRepo.findAllByOrderByOrderDateDesc());
+		model.addAttribute("orders", orderRepo.findByUserIdOrderByOrderDateDesc(null));
 		return "admin/orders";
 	}
 

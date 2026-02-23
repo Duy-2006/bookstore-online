@@ -21,102 +21,66 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class CheckoutService {
-    
-@PersistenceContext
-    private EntityManager em;
+	@PersistenceContext
+	private EntityManager em;
 
-// ✅ THÊM HÀM Ở ĐÂY
-private String generateOrderCode() {
-    return "ORD" + System.currentTimeMillis();
-}
+	private String generateOrderCode() {
+		return "ORD" + System.currentTimeMillis();
+	}
 
-    public Order checkout(Integer userId,
-                          String customerName,
-                          String phone,
-                          String address,
-                          String paymentMethod) {
+	@Transactional
+	public Order checkout(Integer userId, String customerName, String phone, String address, String paymentMethod) {
 
-        // 1. Lấy cart ACTIVE
-        List<Cart> carts = em.createQuery(
-                "SELECT c FROM Cart c WHERE c.user.id = :uid AND c.status = 'ACTIVE'",
-                Cart.class)
-            .setParameter("uid", userId)
-            .getResultList();
+		Cart cart = em.createQuery("SELECT c FROM Cart c WHERE c.user.id = :uid AND c.status = 'ACTIVE'", Cart.class)
+				.setParameter("uid", userId).getResultStream().findFirst()
+				.orElseThrow(() -> new RuntimeException("Không tìm thấy giỏ hàng"));
 
-        if (carts.isEmpty()) {
-            throw new RuntimeException("Không tìm thấy giỏ hàng");
-        }
+		List<CartDetail> cartDetails = em
+				.createQuery("SELECT cd FROM CartDetail cd " + "WHERE cd.cart.id = :cid AND cd.selected = true",
+						CartDetail.class)
+				.setParameter("cid", cart.getId()).getResultList();
 
-        Cart cart = carts.get(0);
+		if (cartDetails.isEmpty()) {
+			throw new RuntimeException("Giỏ hàng trống");
+		}
 
-        // 2. Lấy cart detail
-        List<CartDetail> cartDetails = em.createQuery(
-                "SELECT cd FROM CartDetail cd WHERE cd.cart.id = :cid",
-                CartDetail.class)
-            .setParameter("cid", cart.getId())
-            .getResultList();
+		Order order = Order.builder().orderCode(generateOrderCode()).user(cart.getUser()).customerName(customerName)
+				.customerPhone(phone).customerAddress(address).paymentMethod(paymentMethod).status("PENDING")
+				.paymentStatus("PENDING").totalAmount(BigDecimal.ZERO).orderDate(LocalDateTime.now()).build();
 
-        if (cartDetails.isEmpty()) {
-            throw new RuntimeException("Giỏ hàng trống");
-        }
+		em.persist(order);
 
-        // 3. Tạo order (⚠️ KHÔNG ĐƯỢC THIẾU orderCode)
-        Order order = Order.builder()
-        	.orderCode(generateOrderCode()) // ✅ GỌI Ở ĐÂY
-            .user(cart.getUser())
-            .orderCode("ORD-" + System.currentTimeMillis()) // 🔥 BẮT BUỘC
-            .customerName(customerName)
-            .customerPhone(phone)
-            .customerAddress(address)
-            .paymentMethod(paymentMethod)
-            .status("CONFIRMED")          // ✅ đúng CHECK constraint
-            .paymentStatus("PENDING")    // ✅ đúng CHECK constraint
-            .totalAmount(BigDecimal.ZERO)
-            .build();
+		BigDecimal total = BigDecimal.ZERO;
 
-        // 4. Persist order TRƯỚC
-        em.persist(order);
+		for (CartDetail cd : cartDetails) {
 
-        BigDecimal total = BigDecimal.ZERO;
+			Book book = em.find(Book.class, cd.getBook().getId(), jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
 
-        // 5. Xử lý từng sản phẩm
-        for (CartDetail cd : cartDetails) {
+			int qty = cd.getQuantity();
 
-            Book book = em.find(
-                Book.class,
-                cd.getBook().getId(),
-                jakarta.persistence.LockModeType.PESSIMISTIC_WRITE
-            );
+			if (book.getQuantity() < qty) {
+				throw new RuntimeException("Không đủ hàng: " + book.getTitle());
+			}
 
-            if (book.getQuantity() < cd.getQuantity()) {
-                throw new RuntimeException("Không đủ hàng: " + book.getTitle());
-            }
+			// ✅ Trừ kho tại đây
+			book.setQuantity(book.getQuantity() - qty);
 
-            book.setQuantity(book.getQuantity() - cd.getQuantity());
+			OrderDetail od = OrderDetail.builder().order(order).book(book).quantity(qty).price(cd.getPrice()).build();
 
-            OrderDetail od = OrderDetail.builder()
-                .order(order)
-                .book(book)
-                .quantity(cd.getQuantity())
-                .price(cd.getPrice())
-                .build();
+			em.persist(od);
 
-            em.persist(od); // persist từng detail
+			total = total.add(od.calculateSubtotal());
 
-            total = total.add(od.calculateSubtotal());
-        }
+			// ✅ Xóa item đã mua khỏi giỏ
+			em.remove(cd);
+		}
 
-        // 6. Update tổng tiền
-        order.setTotalAmount(total);
-        em.merge(order);
+		order.setTotalAmount(total);
 
-        // 7. Clear cart
-        cartDetails.forEach(em::remove);
-        cart.setStatus("CHECKOUT");
-        cart.setUpdatedDate(LocalDateTime.now());
-        em.merge(cart);
+		// ✅ Cập nhật lại thời gian giỏ
+		cart.setUpdatedDate(LocalDateTime.now());
 
-        return order;
-    }
+		return order;
+	}
 
 }

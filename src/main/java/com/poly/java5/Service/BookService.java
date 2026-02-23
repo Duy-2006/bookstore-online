@@ -11,7 +11,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 
-import java.math.BigDecimal;
+import java.text.Normalizer;
+import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,66 +67,49 @@ public class BookService {
     
     
  // 🔍 TÌM SÁCH (Tên | Tác giả | Thể loại | ISBN)
-    public List<Book> searchBooks(
-            String title,
-            String author,
-            String category,
-            String isbn) {
+public List<Book> searchBooks(String keyword) {
 
-        log.info("🔍 Tìm sách với điều kiện - title: {}, author: {}, category: {}, isbn: {}",
-                title, author, category, isbn);
-
-        try {
-            StringBuilder jpql = new StringBuilder(
-                "SELECT b FROM Book b WHERE 1=1 "
-            );
-
-            if (title != null && !title.isBlank()) {
-                jpql.append(" AND LOWER(b.title) LIKE :title ");
-            }
-
-            if (author != null && !author.isBlank()) {
-                jpql.append(" AND LOWER(b.author) LIKE :author ");
-            }
-
-            if (category != null && !category.isBlank()) {
-                jpql.append(" AND LOWER(b.category.name) LIKE :category ");
-            }
-
-            if (isbn != null && !isbn.isBlank()) {
-                jpql.append(" AND b.isbn LIKE :isbn ");
-            }
-
-            jpql.append(" ORDER BY b.title ASC");
-
-            TypedQuery<Book> query = entityManager.createQuery(jpql.toString(), Book.class);
-
-            if (title != null && !title.isBlank()) {
-                query.setParameter("title", "%" + title.toLowerCase() + "%");
-            }
-
-            if (author != null && !author.isBlank()) {
-                query.setParameter("author", "%" + author.toLowerCase() + "%");
-            }
-
-            if (category != null && !category.isBlank()) {
-                query.setParameter("category", "%" + category.toLowerCase() + "%");
-            }
-
-            if (isbn != null && !isbn.isBlank()) {
-                query.setParameter("isbn", "%" + isbn + "%");
-            }
-
-            List<Book> books = query.getResultList();
-            log.info("✅ Tìm thấy {} sách", books.size());
-
-            return books;
-
-        } catch (Exception e) {
-            log.error("❌ Lỗi tìm kiếm sách: ", e);
-            throw new RuntimeException("Lỗi khi tìm kiếm sách");
-        }
+    if (keyword == null || keyword.isBlank()) {
+        return new ArrayList<>();
     }
+
+    String k = normalize(keyword);
+
+    List<Book> books = entityManager
+            .createQuery("SELECT b FROM Book b", Book.class)
+            .getResultList();
+
+    return books.stream()
+            .filter(b -> {
+
+                String title = normalize(b.getTitle());
+                String author = b.getAuthor() != null
+                        ? normalize(b.getAuthor().getName())
+                        : "";
+                String category = b.getCategory() != null
+                        ? normalize(b.getCategory().getName())
+                        : "";
+                String isbn = normalize(b.getIsbn());
+
+                return title.contains(k)
+                        || author.contains(k)
+                        || category.contains(k)
+                        || isbn.contains(k);
+            })
+            .collect(Collectors.toList());
+}
+
+
+    // hàm không cần dấu
+    private String normalize(String text) {
+        if (text == null) return "";
+        return Normalizer.normalize(text, Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+                .toLowerCase()
+                .trim();
+    }
+
+
     
     // 4️⃣ LẤY SÁCH MỚI NHẤT (10 cuốn)
     public List<Book> getNewBooks() {

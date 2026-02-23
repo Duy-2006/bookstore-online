@@ -9,14 +9,24 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Integer> {
-    // Lấy danh sách đơn hàng giảm dần theo ngày tạo (Mới nhất lên đầu)
-	List<Order> findAllByOrderByOrderDateDesc();
-    
+	  // ✅ Lọc theo userId
+    List<Order> findByUserIdOrderByOrderDateDesc(Integer userId);
+
+    // ✅ Lọc theo userId + status
+    List<Order> findByUserIdAndStatusOrderByOrderDateDesc(
+        Integer userId,
+        String status
+    );
+
+    // ✅ Lấy đơn theo code + load chi tiết
     @Query(
-	        "SELECT o FROM Order o " +
-	        "LEFT JOIN FETCH o.orderDetails d " +
-	        "LEFT JOIN FETCH d.book " +
-	        "WHERE o.orderCode = :code"
-	    )
- Optional<Order> findByOrderCodeFull(@Param("code") String code);
+        "SELECT DISTINCT o FROM Order o " +
+        "LEFT JOIN FETCH o.orderDetails d " +
+        "LEFT JOIN FETCH d.book " +
+        "WHERE o.orderCode = :code AND o.user.id = :userId"
+    )
+    Optional<Order> findByOrderCodeFull(
+        @Param("code") String code,
+        @Param("userId") Integer userId
+    );
 }

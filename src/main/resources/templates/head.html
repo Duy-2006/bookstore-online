@@ -1,22 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:fragment="head">
-    <meta charset="UTF-8">
-    <title>BookStore</title>
 
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
-	 <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#1a8a4d',
-                        secondary: '#f97316'
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Google icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-    
+<!-- META -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BookStore</title>
+
+<!-- GOOGLE FONT -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+	href="https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&display=swap"
+	rel="stylesheet">
+
+<!-- TAILWIND -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+	tailwind.config = {
+		theme : {
+			extend : {
+				fontFamily : {
+					display : [ 'Manrope', 'sans-serif' ]
+				},
+				colors : {
+					primary : '#0a4da3',
+					accent : '#f44336'
+				}
+			}
+		}
+	}
+</script>
+
+<!-- GOOGLE MATERIAL ICONS -->
+<link
+	href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+	rel="stylesheet">
+
 </head>
+</html>

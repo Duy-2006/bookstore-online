@@ -1,172 +1,189 @@
 <!DOCTYPE html>
-<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="head :: head"></head>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{head :: head}"></head>
 
-<body class="bg-white min-h-screen font-display">
-<div th:replace="menu :: menu"></div>  
-<form th:action="@{/checkout}"
-      method="post"
-      th:object="${checkoutBean}">
+<body class="bg-[#f5f5f5] min-h-screen font-display text-[#222]">
+
+<div th:replace="~{menu :: menu}"></div>
+
+<form th:action="@{/checkout}" method="post" th:object="${checkoutBean}">
 
 <!-- ================= HEADER ================= -->
 <header class="sticky top-0 z-50 bg-white border-b">
-  <div class="flex items-center px-4 py-4">
+  <div class="max-w-[1200px] mx-auto flex items-center px-4 py-4">
     <a th:href="@{/cart}" class="size-10 flex items-center justify-center">
-      <span class="material-symbols-outlined text-primary">arrow_back_ios_new</span>
+      <span class="material-symbols-outlined text-primary">
+        arrow_back_ios_new
+      </span>
     </a>
-    <h2 class="flex-1 text-center text-xl font-extrabold uppercase">Thanh Toán</h2>
+    <h2 class="flex-1 text-center text-xl font-extrabold uppercase">
+      Thanh toán
+    </h2>
   </div>
 </header>
 
-<main>
+<!-- ================= MAIN ================= -->
+<main class="max-w-[1200px] mx-auto px-4 py-8 pb-40">
 
-<div class="flex flex-col md:flex-row">
+<div class="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6">
 
-<!-- ================= THÔNG TIN KHÁCH HÀNG ================= -->
-<section class="flex-1 border-r p-6">
-<h3 class="text-xl font-bold mb-6">Thông tin khách hàng</h3>
+<!-- ================= CUSTOMER INFO ================= -->
+<section class="bg-white rounded-2xl shadow-sm p-6">
+<h3 class="text-xl font-extrabold mb-6">📦 Thông tin nhận hàng</h3>
 
 <div class="space-y-4">
+  <input th:field="*{customerName}" class="input" placeholder="Họ và tên">
+  <p class="error" th:errors="*{customerName}"></p>
 
-<!-- Họ tên -->
-<div>
-<input th:field="*{customerName}"
-       class="w-full border h-12 px-4 rounded"
-       placeholder="Họ và tên">
-<p class="text-red-500 text-sm"
-   th:errors="*{customerName}"></p>
-</div>
+  <input th:field="*{customerPhone}" class="input" placeholder="Số điện thoại">
+  <p class="error" th:errors="*{customerPhone}"></p>
 
-<!-- SĐT -->
-<div>
-<input th:field="*{customerPhone}"
-       class="w-full border h-12 px-4 rounded"
-       placeholder="Số điện thoại">
-<p class="text-red-500 text-sm"
-   th:errors="*{customerPhone}"></p>
-</div>
+  <input th:field="*{email}" class="input" placeholder="Email">
+  <p class="error" th:errors="*{email}"></p>
 
-<!-- EMAIL (🔥 MỚI) -->
-<div>
-<input th:field="*{email}"
-       class="w-full border h-12 px-4 rounded"
-       placeholder="Email">
-<p class="text-red-500 text-sm"
-   th:errors="*{email}"></p>
-</div>
-
-<!-- Địa chỉ -->
-<div>
-<textarea th:field="*{customerAddress}"
-          class="w-full border p-4 rounded min-h-[100px]"
-          placeholder="Địa chỉ giao hàng"></textarea>
-<p class="text-red-500 text-sm"
-   th:errors="*{customerAddress}"></p>
-</div>
-
+  <textarea th:field="*{customerAddress}"
+            class="input min-h-[100px]"
+            placeholder="Địa chỉ giao hàng"></textarea>
+  <p class="error" th:errors="*{customerAddress}"></p>
 </div>
 </section>
 
-
-
-<!-- ================= TÓM TẮT ĐƠN HÀNG ================= -->
-<section class="flex-1 bg-gray-50">
-<div class="p-6">
-
-<div class="flex justify-between mb-6">
-<h3 class="text-xl font-bold">Tóm tắt đơn hàng</h3>
-<span class="text-sm font-bold"
-      th:text="${#lists.size(cartDetails)} + ' sản phẩm'"></span>
+<!-- ================= ORDER SUMMARY ================= -->
+<section class="bg-white rounded-2xl shadow-sm p-6">
+<div class="flex justify-between items-center mb-6">
+  <h3 class="text-xl font-extrabold">🧾 Đơn hàng</h3>
+  <span class="text-sm text-gray-500 font-bold"
+        th:text="${#lists.size(cartDetails)} + ' sản phẩm'"></span>
 </div>
 
-<!-- LIST -->
-<div class="divide-y">
-  <div th:each="item : ${cartDetails}" class="flex gap-4 py-4">
+<div th:each="item : ${cartDetails}" class="flex gap-4 py-4">
 
-    <img th:src="${item.imageUrl}"
-         class="size-20 object-cover rounded-lg"/>
+  <img th:src="${item.imageUrl}"
+       class="w-20 h-28 rounded-xl object-cover"/>
 
-    <div class="flex-1">
-      <p class="font-bold" th:text="${item.title}"></p>
+  <div class="flex-1">
+    <p class="font-bold leading-tight"
+       th:text="${item.title}"></p>
 
-      <p class="text-sm text-gray-500">
-        Số lượng:
-        <span th:text="${item.quantity}"></span>
-      </p>
+    <p class="text-sm text-gray-500 mt-1">
+      SL: <span th:text="${item.quantity}"></span>
+    </p>
 
-      <p class="text-primary font-extrabold"
-         th:text="${item.itemTotal} + 'đ'"></p>
-    </div>
+    <span class="font-bold text-primary"
+          th:text="${item.itemTotal} + ' đ'">
+    </span>
+  </div>
 
+</div>
+
+    
   </div>
 </div>
-
-
 </div>
 </section>
 
 </div>
 
-<!-- ================= THANH TOÁN ================= -->
-<section class="border-t bg-white">
-<div class="p-6 flex flex-col lg:flex-row gap-8">
+<!-- ================= PAYMENT + TOTAL ================= -->
+<div class="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-6 mt-6">
 
-<div class="flex-1">
-<h3 class="text-xl font-bold mb-4">Phương thức thanh toán</h3>
+<section class="bg-white rounded-2xl shadow-sm p-6">
+<h3 class="text-xl font-extrabold mb-4">💳 Phương thức thanh toán</h3>
 
-<label class="flex items-center gap-3 mb-3">
-<input type="radio" name="paymentMethod" value="COD" checked>
-Thanh toán khi giao hàng
+<label class="payment-option">
+  <input type="radio" th:field="*{paymentMethod}" value="COD">
+  <span>Thanh toán khi giao hàng (COD)</span>
 </label>
 
-<label class="flex items-center gap-3">
-<input type="radio" name="paymentMethod" value="BANKING">
-Chuyển khoản ngân hàng
+<label class="payment-option">
+  <input type="radio" th:field="*{paymentMethod}" value="BANKING">
+  <span>Chuyển khoản ngân hàng</span>
 </label>
-</div>
+</section>
 
-<!-- ================= TỔNG TIỀN ================= -->
-<div class="w-full lg:w-96 bg-gray-50 p-6 rounded-xl border">
-<div class="space-y-3">
+<section class="bg-white rounded-2xl shadow-sm p-6">
+<div class="space-y-3 text-sm">
+  <div class="flex justify-between">
+    <span>Tạm tính</span>
+    <span th:text="${totalAmount} + ' đ'"></span>
+  </div>
 
-<div class="flex justify-between">
-<span>Tạm tính</span>
-<span th:text="${totalAmount} + 'đ'"></span>
-</div>
+  <div class="flex justify-between">
+    <span>Phí vận chuyển</span>
+    <span th:text="${shippingFee} + ' đ'"></span>
+  </div>
 
-<div class="flex justify-between">
-<span>Phí vận chuyển</span>
-<span th:text="${shippingFee} + 'đ'"></span>
-</div>
+  <div class="flex justify-between text-primary">
+    <span>Giảm giá</span>
+    <span th:text="'-' + ${discount} + ' đ'"></span>
+  </div>
 
-<div class="flex justify-between text-primary">
-<span>Giảm giá</span>
-<span th:text="'-' + ${discount} + 'đ'"></span>
-</div>
-
-<div class="flex justify-between font-bold text-xl pt-4 border-t">
-<span>Tổng thanh toán</span>
-<span class="text-primary"
-      th:text="${finalAmount} + 'đ'"></span>
-</div>
-
-</div>
-</div>
-
+  <div class="flex justify-between font-extrabold text-xl pt-4 border-t">
+    <span>Tổng thanh toán</span>
+    <span class="text-primary"
+          th:text="${finalAmount} + ' đ'"></span>
+  </div>
 </div>
 </section>
 
+</div>
 </main>
 
 <!-- ================= SUBMIT ================= -->
-<div class="fixed bottom-0 left-0 right-0 bg-white border-t p-5">
+<div class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
+<div class="max-w-[1200px] mx-auto px-4 py-4">
 <button type="submit"
-class="w-full bg-primary text-white h-16 rounded-xl text-xl font-black">
+class="w-full bg-primary text-white h-16 rounded-2xl text-xl font-black">
 XÁC NHẬN ĐẶT HÀNG
 </button>
 </div>
+</div>
 
 </form>
-<div th:replace="footer :: footer"></div>  
+
+<div th:replace="~{footer :: footer}"></div>
+<style>
+.input {
+    width: 100%;
+    height: 48px;
+    padding: 0 16px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    outline: none;
+    transition: .2s;
+}
+
+.input:focus {
+    border-color: #1a8a4d;
+    box-shadow: 0 0 0 2px rgba(26, 138, 77, .15);
+}
+
+.error {
+    color: #ef4444;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.payment-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    margin-bottom: 12px;
+    transition: .2s;
+}
+
+.payment-option:hover {
+    background: #f9fafb;
+}
+
+.payment-option input {
+    accent-color: #1a8a4d;
+}
+</style>
+
 </body>
 </html>

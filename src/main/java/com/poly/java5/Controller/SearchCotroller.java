@@ -1,6 +1,5 @@
 package com.poly.java5.Controller;
 
-
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
@@ -19,23 +18,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SearchCotroller {
 
-    private final BookService bookService;
+	private final BookService bookService;
 
-    @GetMapping("")
-    public String search(
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) String author,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) String isbn,
-            Model model) {
+	@GetMapping("")
+	public String search(@RequestParam(required = false) String keyword, Model model) {
 
-        List<Book> books = bookService.searchBooks(
-                title, author, category, isbn
-        );
+		List<Book> books = bookService.searchBooks(keyword);
 
-        model.addAttribute("books", books);
-        model.addAttribute("keyword", title);
+		model.addAttribute("books", books);
+		model.addAttribute("keyword", keyword);
 
-        return "search";
-    }
+		return "search";
+	}
+
 }

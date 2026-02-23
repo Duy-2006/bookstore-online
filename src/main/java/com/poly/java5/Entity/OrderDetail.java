@@ -7,10 +7,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -43,6 +46,19 @@ public class OrderDetail {
 	    // Tính subtotal cho item này
 	    public BigDecimal calculateSubtotal() {
 	        return price.multiply(BigDecimal.valueOf(quantity));
+	    }
+	    // 🔥 QUAN TRỌNG NHẤT
+	    @Override
+	    public boolean equals(Object o) {
+	        if (this == o) return true;
+	        if (!(o instanceof OrderDetail)) return false;
+	        OrderDetail that = (OrderDetail) o;
+	        return id != null && id.equals(that.id);
+	    }
+
+	    @Override
+	    public int hashCode() {
+	        return getClass().hashCode();
 	    }
   
    

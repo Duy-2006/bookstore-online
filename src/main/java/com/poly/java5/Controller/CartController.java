@@ -19,6 +19,7 @@ public class CartController {
 	private final CartService cartService;
     private final BookService bookService;
     
+    
     private Integer getUserId(HttpSession session) {
         return (Integer) session.getAttribute("USER_ID");
     }
@@ -218,4 +219,42 @@ public class CartController {
         
         return response;
     }
+    
+    @PostMapping("/select")
+    @ResponseBody
+    public void selectCartItem(
+            @RequestBody Map<String, Object> body,
+            HttpSession session
+    ) {
+        Integer userId = getUserId(session);
+        if (userId == null) {
+            throw new RuntimeException("Chưa đăng nhập");
+        }
+
+        Integer cartDetailId =
+                Integer.valueOf(body.get("cartDetailId").toString());
+
+        Boolean selected =
+                Boolean.valueOf(body.get("selected").toString());
+
+        cartService.updateSelected(userId, cartDetailId, selected);
+    }
+    
+    @PostMapping("/update")
+    @ResponseBody
+    public void updateCart(
+            @RequestBody Map<String, Integer> body,
+            HttpSession session) {
+
+        Integer userId = (Integer) session.getAttribute("USER_ID");
+
+        cartService.updateCartItem(
+            userId,
+            body.get("cartDetailId"),
+            body.get("quantity")
+        );
+    }
+
+
+
 }

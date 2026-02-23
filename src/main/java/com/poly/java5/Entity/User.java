@@ -59,9 +59,6 @@ public class User implements Serializable {
         return role == UserRole.ADMIN;
     }
 
-    public boolean isSeller() {
-        return role == UserRole.SELLER;
-    }
 
     public boolean isBuyer() {
         return role == UserRole.USER;

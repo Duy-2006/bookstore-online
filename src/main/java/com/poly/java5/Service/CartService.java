@@ -25,288 +25,233 @@ import java.util.*;
 @Transactional
 public class CartService {
 	@PersistenceContext
-	private EntityManager entityManager;
+	private EntityManager em;
 
-	private final BookService bookService;
+	// ================= CART =================
 
-	// ============ CART OPERATIONS ============
-
-	// Lấy hoặc tạo giỏ hàng cho user
 	public Cart getOrCreateCart(Integer userId) {
-		TypedQuery<Cart> query = entityManager
-				.createQuery("SELECT c FROM Cart c WHERE c.user.id = :userId AND c.status = :status", Cart.class);
-		query.setParameter("userId", userId);
-		query.setParameter("status", "ACTIVE");
+		List<Cart> carts = em
+				.createQuery("SELECT c FROM Cart c WHERE c.user.id = :uid AND c.status = 'ACTIVE'", Cart.class)
+				.setParameter("uid", userId).getResultList();
 
-		List<Cart> carts = query.getResultList();
-		if (!carts.isEmpty()) {
+		if (!carts.isEmpty())
 			return carts.get(0);
-		}
 
-		User user = entityManager.find(User.class, userId);
-		if (user == null) {
+		User user = em.find(User.class, userId);
+		if (user == null)
 			throw new RuntimeException("User không tồn tại");
-		}
 
 		Cart cart = Cart.builder().user(user).status("ACTIVE").createdDate(LocalDateTime.now())
 				.updatedDate(LocalDateTime.now()).build();
 
-		entityManager.persist(cart);
+		em.persist(cart);
 		return cart;
 	}
 
-	// Thêm sản phẩm vào giỏ hàng
-	public Map<String, Object> addToCart(Integer userId, Integer bookId, Integer quantity) {
+	// ================= ADD =================
 
-		if (quantity <= 0) {
+	public Map<String, Object> addToCart(Integer userId, Integer bookId, Integer qty) {
+
+		if (qty <= 0)
 			throw new RuntimeException("Số lượng không hợp lệ");
-		}
 
-		Book book = bookService.getBookById(bookId);
-		if (book == null) {
+		Book book = em.find(Book.class, bookId);
+		if (book == null)
 			throw new RuntimeException("Sách không tồn tại");
-		}
-
-		if (book.getQuantity() < quantity) {
-			throw new RuntimeException("Không đủ hàng trong kho");
-		}
 
 		Cart cart = getOrCreateCart(userId);
 
-		TypedQuery<CartDetail> query = entityManager.createQuery(
-				"SELECT cd FROM CartDetail cd WHERE cd.cart.id = :cartId AND cd.book.id = :bookId", CartDetail.class);
-		query.setParameter("cartId", cart.getId());
-		query.setParameter("bookId", bookId);
+		List<CartDetail> list = em
+				.createQuery("SELECT cd FROM CartDetail cd WHERE cd.cart.id = :cid AND cd.book.id = :bid",
+						CartDetail.class)
+				.setParameter("cid", cart.getId()).setParameter("bid", bookId).getResultList();
 
-		List<CartDetail> list = query.getResultList();
+		CartDetail cd;
 
 		if (!list.isEmpty()) {
-			CartDetail cd = list.get(0);
-			cd.setQuantity(cd.getQuantity() + quantity);
-			entityManager.merge(cd);
+			cd = list.get(0);
+			int newQty = cd.getQuantity() + qty;
+
+			// ✅ chỉ kiểm tra tồn kho
+			if (book.getQuantity() < newQty)
+				throw new RuntimeException("Chỉ còn " + book.getQuantity() + " sản phẩm");
+
+			cd.setQuantity(newQty);
 		} else {
-			CartDetail cd = CartDetail.builder().cart(cart).book(book).quantity(quantity).price(book.getPrice())
+
+			if (book.getQuantity() < qty)
+				throw new RuntimeException("Chỉ còn " + book.getQuantity() + " sản phẩm");
+
+			cd = CartDetail.builder().cart(cart).book(book).quantity(qty).price(book.getPrice()).selected(false)
 					.build();
-			entityManager.persist(cd);
+			em.persist(cd);
 		}
 
 		cart.setUpdatedDate(LocalDateTime.now());
-		entityManager.merge(cart);
-
-		logActivity(userId, "ADD_TO_CART", "Thêm sách: " + book.getTitle());
 
 		return getCartSummary(userId);
 	}
 
-	// Lấy chi tiết giỏ hàng
-	public Map<String, Object> getCartSummary(Integer userId) {
-		log.info("Lấy thông tin giỏ hàng cho user ID: {}", userId);
+	// ================= UPDATE QTY =================
 
-		try {
-			Cart cart = getOrCreateCart(userId);
+	public Map<String, Object> updateCartItem(Integer userId, Integer cartDetailId, Integer newQty) {
 
-			// Lấy tất cả sản phẩm trong giỏ
-			TypedQuery<CartDetail> query = entityManager
-					.createQuery("SELECT cd FROM CartDetail cd WHERE cd.cart.id = :cartId", CartDetail.class);
-			query.setParameter("cartId", cart.getId());
+		CartDetail cd = em.find(CartDetail.class, cartDetailId);
+		if (cd == null)
+			throw new RuntimeException("Không tìm thấy sản phẩm");
 
-			List<CartDetail> cartDetails = query.getResultList();
+		if (!cd.getCart().getUser().getId().equals(userId))
+			throw new RuntimeException("Không có quyền");
 
-			// Chuyển đổi sang Map để dễ xử lý trong template
-			List<Map<String, Object>> cartItems = new ArrayList<>();
-			BigDecimal totalAmount = BigDecimal.ZERO;
-			int totalItems = 0;
-
-			for (CartDetail detail : cartDetails) {
-				Map<String, Object> item = new HashMap<>();
-				item.put("cartDetailId", detail.getId());
-				item.put("quantity", detail.getQuantity());
-				item.put("price", detail.getPrice());
-				item.put("bookId", detail.getBook().getId());
-				item.put("title", detail.getBook().getTitle());
-				item.put("author", detail.getBook().getAuthor());
-				item.put("imageUrl", detail.getBook().getImageUrl());
-				item.put("stockQuantity", detail.getBook().getQuantity());
-
-				BigDecimal itemTotal = detail.getPrice().multiply(BigDecimal.valueOf(detail.getQuantity()));
-				item.put("itemTotal", itemTotal);
-
-				cartItems.add(item);
-				totalAmount = totalAmount.add(itemTotal);
-				totalItems += detail.getQuantity();
-			}
-
-			Map<String, Object> result = new HashMap<>();
-			result.put("cartId", cart.getId());
-			result.put("status", cart.getStatus());
-			result.put("cartItems", cartItems);
-			result.put("totalItems", totalItems);
-			result.put("totalAmount", totalAmount);
-			result.put("shippingFee", BigDecimal.ZERO);
-			result.put("finalAmount", totalAmount);
-
-			log.info("Giỏ hàng có {} sản phẩm, tổng tiền: {}", totalItems, totalAmount);
-			return result;
-
-		} catch (Exception e) {
-			log.error("Lỗi khi lấy thông tin giỏ hàng: ", e);
-			throw new RuntimeException("Không thể lấy thông tin giỏ hàng");
+		if (newQty <= 0) {
+			return removeFromCart(userId, cartDetailId);
 		}
+
+		Book book = cd.getBook();
+
+		// ✅ chỉ kiểm tra
+		if (book.getQuantity() < newQty)
+			throw new RuntimeException("Chỉ còn " + book.getQuantity() + " sản phẩm");
+
+		cd.setQuantity(newQty);
+		cd.getCart().setUpdatedDate(LocalDateTime.now());
+
+		return getCartSummary(userId);
 	}
 
-	// Cập nhật số lượng
-	public Map<String, Object> updateCartItem(Integer userId, Integer cartDetailId, Integer quantity) {
-		log.info("Cập nhật số lượng cartDetail ID: {}, số lượng mới: {}", cartDetailId, quantity);
+	// ================= REMOVE =================
 
-		try {
-			if (quantity <= 0) {
-				return removeFromCart(userId, cartDetailId);
-			}
-
-			// Tìm CartDetail
-			CartDetail cartDetail = entityManager.find(CartDetail.class, cartDetailId);
-			if (cartDetail == null) {
-				throw new RuntimeException("Không tìm thấy sản phẩm trong giỏ hàng");
-			}
-
-			// Kiểm tra quyền sở hữu
-			if (!cartDetail.getCart().getUser().getId().equals(userId)) {
-				throw new RuntimeException("Bạn không có quyền chỉnh sửa giỏ hàng này");
-			}
-
-			// Kiểm tra số lượng trong kho
-			Book book = cartDetail.getBook();
-			if (book.getQuantity() < quantity) {
-				throw new RuntimeException("Số lượng trong kho không đủ. Chỉ còn: " + book.getQuantity());
-			}
-
-			// Cập nhật số lượng
-			int oldQuantity = cartDetail.getQuantity();
-			cartDetail.setQuantity(quantity);
-			entityManager.merge(cartDetail);
-
-			// Cập nhật thời gian giỏ hàng
-			Cart cart = cartDetail.getCart();
-			cart.setCreatedDate(LocalDateTime.now());
-			entityManager.merge(cart);
-
-			// Log activity
-			logActivity(userId, "UPDATE_CART",
-					String.format("Cập nhật sách '%s' từ %d thành %d", book.getTitle(), oldQuantity, quantity));
-
-			return getCartSummary(userId);
-
-		} catch (Exception e) {
-			log.error("Lỗi khi cập nhật giỏ hàng: ", e);
-			throw new RuntimeException(e.getMessage());
-		}
-	}
-
-	// Xóa sản phẩm khỏi giỏ hàng
 	public Map<String, Object> removeFromCart(Integer userId, Integer cartDetailId) {
-		log.info("Xóa cartDetail ID: {} khỏi giỏ hàng", cartDetailId);
 
-		try {
-			// Tìm CartDetail
-			CartDetail cartDetail = entityManager.find(CartDetail.class, cartDetailId);
-			if (cartDetail == null) {
-				throw new RuntimeException("Không tìm thấy sản phẩm trong giỏ hàng");
-			}
+		CartDetail cd = em.find(CartDetail.class, cartDetailId);
+		if (cd == null)
+			throw new RuntimeException("Không tìm thấy sản phẩm");
 
-			// Kiểm tra quyền sở hữu
-			if (!cartDetail.getCart().getUser().getId().equals(userId)) {
-				throw new RuntimeException("Bạn không có quyền xóa sản phẩm này");
-			}
+		if (!cd.getCart().getUser().getId().equals(userId))
+			throw new RuntimeException("Không có quyền");
 
-			String bookTitle = cartDetail.getBook().getTitle();
+		em.remove(cd);
 
-			// Xóa CartDetail
-			entityManager.remove(cartDetail);
+		cd.getCart().setUpdatedDate(LocalDateTime.now());
 
-			// Cập nhật thời gian giỏ hàng
-			Cart cart = cartDetail.getCart();
-			cart.setCreatedDate(LocalDateTime.now());
-			entityManager.merge(cart);
-
-			// Log activity
-			logActivity(userId, "REMOVE_FROM_CART", String.format("Xóa sách '%s' khỏi giỏ hàng", bookTitle));
-
-			return getCartSummary(userId);
-
-		} catch (Exception e) {
-			log.error("Lỗi khi xóa khỏi giỏ hàng: ", e);
-			throw new RuntimeException("Không thể xóa sản phẩm");
-		}
+		return getCartSummary(userId);
 	}
 
-	// Xóa toàn bộ giỏ hàng
+	// ================= SELECT =================
+
+	public void updateSelected(Integer userId, Integer cartDetailId, Boolean selected) {
+
+		CartDetail cd = em.find(CartDetail.class, cartDetailId);
+		if (cd == null)
+			throw new RuntimeException("CartDetail không tồn tại");
+
+		if (!cd.getCart().getUser().getId().equals(userId))
+			throw new RuntimeException("Không có quyền");
+
+		cd.setSelected(selected);
+	}
+
+	// ================= SUMMARY =================
+
+	public Map<String, Object> getCartSummary(Integer userId) {
+
+		Cart cart = getOrCreateCart(userId);
+
+		List<CartDetail> details = em
+				.createQuery("SELECT cd FROM CartDetail cd WHERE cd.cart.id = :cid", CartDetail.class)
+				.setParameter("cid", cart.getId()).getResultList();
+
+		BigDecimal total = BigDecimal.ZERO;
+		int totalItems = 0;
+		List<Map<String, Object>> items = new ArrayList<>();
+
+		for (CartDetail cd : details) {
+			Map<String, Object> m = new HashMap<>();
+			m.put("cartDetailId", cd.getId());
+			m.put("title", cd.getBook().getTitle());
+			m.put("author", cd.getBook().getAuthor());
+			m.put("imageUrl", cd.getBook().getImageUrl());
+			m.put("quantity", cd.getQuantity());
+			m.put("price", cd.getPrice());
+			m.put("selected", cd.getSelected());
+
+			BigDecimal itemTotal = cd.calculateTotal();
+			m.put("itemTotal", itemTotal);
+
+			total = total.add(itemTotal);
+			totalItems += cd.getQuantity();
+
+			items.add(m);
+		}
+
+		Map<String, Object> result = new HashMap<>();
+		result.put("cartItems", items);
+		result.put("totalItems", totalItems);
+		result.put("totalAmount", total);
+
+		return result;
+	}
+
+	// ================= SELECTED =================
+
+	public List<CartDetail> getSelectedCartDetails(Integer userId) {
+		Cart cart = getOrCreateCart(userId);
+		return em.createQuery("SELECT cd FROM CartDetail cd WHERE cd.cart.id = :cid AND cd.selected = true",
+				CartDetail.class).setParameter("cid", cart.getId()).getResultList();
+	}
+
+	public BigDecimal getSelectedTotalAmount(Integer userId) {
+		Cart cart = getOrCreateCart(userId);
+		return em.createQuery(
+				"SELECT COALESCE(SUM(cd.price * cd.quantity),0) FROM CartDetail cd WHERE cd.cart.id = :cid AND cd.selected = true",
+				BigDecimal.class).setParameter("cid", cart.getId()).getSingleResult();
+	}
+
+	public int getCartItemCount(Integer userId) {
+		Cart cart = getOrCreateCart(userId);
+		Long count = em.createQuery("SELECT COALESCE(SUM(cd.quantity),0) FROM CartDetail cd WHERE cd.cart.id = :cid",
+				Long.class).setParameter("cid", cart.getId()).getSingleResult();
+		return count.intValue();
+	}
+
+	@Transactional
 	public void clearCart(Integer userId) {
-		log.info("Xóa toàn bộ giỏ hàng user ID: {}", userId);
 
-		try {
-			Cart cart = getOrCreateCart(userId);
+		Cart cart = getOrCreateCart(userId);
 
-			// Xóa tất cả CartDetail
-			TypedQuery<CartDetail> query = entityManager
-					.createQuery("SELECT cd FROM CartDetail cd WHERE cd.cart.id = :cartId", CartDetail.class);
-			query.setParameter("cartId", cart.getId());
+		List<CartDetail> details = em
+				.createQuery("SELECT cd FROM CartDetail cd WHERE cd.cart.id = :cid", CartDetail.class)
+				.setParameter("cid", cart.getId()).getResultList();
 
-			List<CartDetail> cartDetails = query.getResultList();
-			for (CartDetail detail : cartDetails) {
-				entityManager.remove(detail);
-			}
-
-			// Cập nhật thời gian giỏ hàng
-			cart.setCreatedDate(LocalDateTime.now());
-			entityManager.merge(cart);
-
-			// Log activity
-			logActivity(userId, "CLEAR_CART", "Xóa toàn bộ giỏ hàng");
-
-			log.info("Đã xóa toàn bộ giỏ hàng");
-
-		} catch (Exception e) {
-			log.error("Lỗi khi xóa giỏ hàng: ", e);
-			throw new RuntimeException("Không thể xóa giỏ hàng");
+		for (CartDetail cd : details) {
+			em.remove(cd);
 		}
+
+		cart.setUpdatedDate(LocalDateTime.now());
 	}
 
-	// Đếm số lượng sản phẩm trong giỏ
-	public Integer getCartItemCount(Integer userId) {
-		log.info("Đếm số lượng sản phẩm trong giỏ user ID: {}", userId);
+	public List<Map<String, Object>> getSelectedCartItems(Integer userId) {
 
-		try {
-			Cart cart = getOrCreateCart(userId);
+		Cart cart = getOrCreateCart(userId);
 
-			TypedQuery<Long> query = entityManager.createQuery(
-					"SELECT COALESCE(SUM(cd.quantity), 0) FROM CartDetail cd WHERE cd.cart.id = :cartId", Long.class);
-			query.setParameter("cartId", cart.getId());
+		List<CartDetail> details = em
+				.createQuery("SELECT cd FROM CartDetail cd " + "JOIN FETCH cd.book "
+						+ "WHERE cd.cart.id = :cid AND cd.selected = true", CartDetail.class)
+				.setParameter("cid", cart.getId()).getResultList();
 
-			Long count = query.getSingleResult();
-			return count.intValue();
+		List<Map<String, Object>> items = new ArrayList<>();
 
-		} catch (Exception e) {
-			log.error("Lỗi khi đếm sản phẩm trong giỏ: ", e);
-			return 0;
+		for (CartDetail cd : details) {
+			Map<String, Object> m = new HashMap<>();
+			m.put("title", cd.getBook().getTitle());
+			m.put("imageUrl", cd.getBook().getImageUrl());
+			m.put("price", cd.getPrice());
+			m.put("quantity", cd.getQuantity());
+			m.put("itemTotal", cd.calculateTotal());
+			items.add(m);
 		}
-	}
 
-	// ============ HELPER METHODS ============
-
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
-	public void logActivity(Integer userId, String activityType, String description) {
-	    User user = entityManager.find(User.class, userId);
-	    if (user == null) return;
-
-	    ActivityLog activityLog = ActivityLog.builder()
-	        .user(user)
-	        .activityType(activityType)
-	        .description(description)
-	        .ipAddress("127.0.0.1")
-	        .createdDate(LocalDateTime.now())
-	        .build();
-
-	    entityManager.persist(activityLog);
+		return items;
 	}
 
 }
