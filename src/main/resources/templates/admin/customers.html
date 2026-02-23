@@ -5,81 +5,121 @@
     <title>Quản lý Khách hàng</title>
 </head>
 <body>
-<section>
-    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h4 class="m-0">Danh sách Khách Hàng</h4>
+    
+    <div class="container-fluid p-0 animate__animated animate__fadeIn">
+        
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm mb-3" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
-        <div class="card-body">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                <tr>
-                    <th>Username</th>
-                    <th>Họ tên / Email</th>
-                    <th>Tổng chi tiêu</th>
-                    <th>Phân loại</th>
-                    <th>Trạng thái</th>
-                    <th>Hành động</th>
-                </tr>
-                </thead>
+        <div class="card border-0 shadow-sm">
+            <div class="card-header text-white py-3 d-flex justify-content-between align-items-center"
+                 style="background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-users-gear fs-5"></i>
+                    <h5 class="m-0 fw-bold text-uppercase">Danh sách Khách Hàng</h5>
+                </div>
+                
+                <div class="input-group input-group-sm w-auto">
+                    <input type="text" class="form-control border-0 bg-light bg-opacity-25 text-white placeholder-white" placeholder="Tìm khách hàng..." style="color: white;">
+                    <button class="btn btn-outline-light border-0 bg-light bg-opacity-25" type="button"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
+            </div>
 
-                <tbody>
-                <tr th:each="u : ${customers}">
-                    <td class="fw-bold" th:text="${u.username}"></td>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered align-middle mb-0">
+                        <thead class="bg-light text-secondary">
+                            <tr class="text-center text-uppercase small fw-bold" style="background-color: #f8f9fa;">
+                                <th class="text-start ps-4">Thông tin Khách hàng</th>
+                                <th>Username</th>
+                                <th class="text-end">Tổng chi tiêu</th>
+                                <th>Phân loại</th>
+                                <th>Trạng thái</th>
+                                <th style="width: 120px;">Hành động</th>
+                            </tr>
+                        </thead>
 
-                    <td>
-                        <!-- FIX TẠI ĐÂY -->
-                        <span th:text="${u.fullName}"></span><br>
-                        <small class="text-muted" th:text="${u.email}"></small>
-                    </td>
+                        <tbody>
+                        <tr th:each="u : ${customers}">
+                            
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold me-3" 
+                                         style="width: 40px; height: 40px; font-size: 1.2rem;">
+                                        <span th:text="${#strings.substring(u.fullName, 0, 1)}">A</span>
+                                    </div>
+                                    <div>
+                                        <strong class="d-block text-dark" th:text="${u.fullName}"></strong>
+                                        <small class="text-muted"><i class="fa-regular fa-envelope me-1"></i>[[${u.email}]]</small>
+                                    </div>
+                                </div>
+                            </td>
 
-                    <td class="text-end fw-bold text-success"
-                        th:text="${#numbers.formatDecimal(u.totalSpending, 0, 'COMMA', 0, 'POINT')} + ' đ'">
-                    </td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-secondary border font-monospace" th:text="${u.username}"></span>
+                            </td>
 
-                    <td>
-                        <span th:if="${u.customerType == 'VIP (Thân thiết)'}"
-                              class="badge bg-warning text-dark">
-                            <i class="fa-solid fa-crown"></i> VIP
-                        </span>
+                            <td class="text-end fw-bold text-success">
+                                <span th:text="${#numbers.formatDecimal(u.totalSpending, 0, 'COMMA', 0, 'POINT')}"></span> đ
+                            </td>
 
-                        <span th:if="${u.customerType == 'Tiềm năng'}"
-                              class="badge bg-info text-dark">
-                            Tiềm năng
-                        </span>
+                            <td class="text-center">
+                                <span th:if="${u.customerType == 'VIP (Thân thiết)'}"
+                                      class="badge rounded-pill bg-warning text-dark border border-warning shadow-sm">
+                                    <i class="fa-solid fa-crown me-1"></i> VIP
+                                </span>
 
-                        <span th:if="${u.customerType == 'Khách mới'}"
-                              class="badge bg-secondary">
-                            Mới
-                        </span>
-                    </td>
+                                <span th:if="${u.customerType == 'Tiềm năng'}"
+                                      class="badge rounded-pill bg-info bg-opacity-10 text-info border border-info">
+                                    <i class="fa-solid fa-star me-1"></i> Tiềm năng
+                                </span>
 
-                    <td>
-                        <span th:if="${u.active}" class="badge bg-success">Hoạt động</span>
-                        <span th:unless="${u.active}" class="badge bg-danger">Đã khóa</span>
-                    </td>
+                                <span th:if="${u.customerType == 'Khách mới'}"
+                                      class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary border border-secondary">
+                                    <i class="fa-solid fa-user me-1"></i> Mới
+                                </span>
+                            </td>
 
-                    <td>
-                        <a th:href="@{/admin/customers/history/{username}(username=${u.username})}"
-                           class="btn btn-outline-primary btn-sm" title="Lịch sử mua">
-                            <i class="fa-solid fa-clock-rotate-left"></i>
-                        </a>
+                            <td class="text-center">
+                                <span th:if="${u.active}" class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">
+                                    <i class="fa-solid fa-check-circle me-1"></i> Hoạt động
+                                </span>
+                                <span th:unless="${u.active}" class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill">
+                                    <i class="fa-solid fa-ban me-1"></i> Đã khóa
+                                </span>
+                            </td>
 
-                        <a th:href="@{/admin/customers/toggle/{username}(username=${u.username})}"
-                           class="btn btn-sm"
-                           th:classappend="${u.active} ? 'btn-outline-danger' : 'btn-outline-success'"
-                           th:text="${u.active} ? 'Khóa' : 'Mở'"
-                           onclick="return confirm('Bạn có chắc muốn thay đổi trạng thái tài khoản này?')">
-                        </a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a th:href="@{/admin/customers/history/{username}(username=${u.username})}"
+                                       class="btn btn-outline-primary" 
+                                       data-bs-toggle="tooltip" title="Xem lịch sử mua hàng">
+                                        <i class="fa-solid fa-clock-rotate-left"></i>
+                                    </a>
+
+                                    <a th:href="@{/admin/customers/toggle/{username}(username=${u.username})}"
+                                       class="btn"
+                                       th:classappend="${u.active} ? 'btn-outline-danger' : 'btn-outline-success'"
+                                       onclick="return confirm('Xác nhận thay đổi trạng thái hoạt động của tài khoản này?')"
+                                       th:title="${u.active} ? 'Khóa tài khoản' : 'Mở khóa tài khoản'">
+                                        <i class="fa-solid" th:classappend="${u.active} ? 'fa-lock' : 'fa-lock-open'"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="card-footer bg-white border-0 py-3" th:unless="${#lists.isEmpty(customers)}">
+                <div class="small text-muted text-center">
+                    Đang quản lý <strong th:text="${customers.size()}"></strong> tài khoản khách hàng.
+                </div>
+            </div>
         </div>
     </div>
-</section>
 </body>
 </html>
