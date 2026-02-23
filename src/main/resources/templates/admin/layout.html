@@ -1,157 +1,286 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-	th:fragment="admin_layout(content)">
+<html xmlns:th="http://www.thymeleaf.org" th:fragment="admin_layout(content)">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BookStore Online Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookStore Online Management</title>
 
-<link
-	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-	rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<link rel="stylesheet"
-	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --topbar-height: 60px;
+            
+            /* --- BẢNG MÀU SEA BLUE THEME (Đã chốt) --- */
+            --primary-blue: #005c97;      /* Xanh biển đậm chủ đạo */
+            --secondary-blue: #363795;    /* Xanh tím than (Gradient đuôi) */
+            --bg-light-gray: #f3f6f9;     /* Xám nền hiện đại */
+            --text-white: #ffffff;
+            --text-gray: #b0c4de;         /* Màu chữ menu chưa active (xanh xám nhạt) */
+        }
 
-<style>
-.nav-link {
-	color: #333;
-	font-weight: 500;
-}
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light-gray);
+            font-size: 0.9rem;
+        }
 
-.nav-link:hover {
-	background-color: #e9ecef;
-	color: #000;
-}
+        /* --- Navbar (Header Trắng) --- */
+        .navbar {
+            height: var(--topbar-height);
+            background-color: #ffffff;
+            border-bottom: 1px solid #e0e0e0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            z-index: 1030;
+            margin-left: var(--sidebar-width);
+        }
 
-.nav-link.active {
-	background-color: #0d6efd;
-	color: white;
-}
+        /* --- Sidebar (Xanh Nước Biển Gradient) --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            /* Gradient Xanh Biển sang trọng */
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            padding: 0;
+            z-index: 1040;
+            color: var(--text-white);
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
 
-.sidebar-heading {
-	font-size: 0.85rem;
-	text-transform: uppercase;
-	font-weight: bold;
-	color: #6c757d;
-	margin-top: 1rem;
-	margin-bottom: 0.5rem;
-	padding-left: 1rem;
-}
-</style>
+        /* Logo Area */
+        .sidebar-brand {
+            height: var(--topbar-height);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            background-color: rgba(0,0,0,0.1); /* Tối hơn nền chút */
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.25rem;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+        }
+        
+        .sidebar-brand:hover { color: #fff; }
+
+        .sidebar-content {
+            padding: 1.5rem 1rem;
+        }
+
+        /* Tiêu đề nhóm menu */
+        .sidebar-heading {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: rgba(255,255,255,0.5); /* Chữ mờ tinh tế */
+            margin: 1.5rem 0 0.5rem 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Link Menu */
+        .nav-link {
+            color: var(--text-gray);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link i {
+            width: 24px;
+            text-align: center;
+            margin-right: 0.8rem;
+            font-size: 1.1rem;
+        }
+
+        .nav-link:hover {
+            color: #fff;
+            background-color: rgba(255,255,255,0.15); /* Sáng lên khi rê chuột */
+            transform: translateX(5px);
+        }
+
+        /* Trạng thái Active (Nền trắng, chữ xanh - Tạo điểm nhấn) */
+        .nav-link.active {
+            background-color: #ffffff;
+            color: var(--primary-blue);
+            font-weight: 700;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .nav-link.active i {
+            color: var(--secondary-blue); /* Icon đổi màu theo */
+        }
+
+        /* Menu Admin (Hệ thống) */
+        .nav-link.text-danger { color: #ffcccc !important; }
+        .nav-link.text-danger:hover { background-color: rgba(255, 0, 0, 0.2) !important; color: #fff !important; }
+
+        /* --- Main Content --- */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            margin-top: var(--topbar-height);
+            min-height: calc(100vh - var(--topbar-height));
+        }
+
+        /* Custom Scrollbar */
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 2px; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; }
+            .navbar { margin-left: 0; }
+        }
+    </style>
 </head>
-<body class="bg-light">
+<body>
 
-	<nav
-		class="navbar navbar-expand-lg navbar-dark bg-primary px-3 shadow-sm sticky-top">
-		<a class="navbar-brand fw-bold" href="/admin"> <i
-			class="fa-solid fa-book-open"></i> BOOKSTORE
-		</a>
+    <div class="sidebar d-none d-md-block">
+        <a class="sidebar-brand" href="/admin">
+            <i class="fa-solid fa-anchor me-2"></i> BOOKSTORE
+        </a>
 
-		<div class="collapse navbar-collapse justify-content-end">
-			<ul class="navbar-nav">
-				<li class="nav-item dropdown"><a
-					class="nav-link dropdown-toggle" href="#" role="button"
-					data-bs-toggle="dropdown"> <i class="fa-solid fa-user-circle"></i>
-						<span
-						th:text="${session.currentUser != null ? session.currentUser.fullname : 'Tài khoản'}">Admin</span>
-				</a>
-					<ul class="dropdown-menu dropdown-menu-end">
-						<li><a class="dropdown-item" href="#">Hồ sơ cá nhân</a></li>
-						<li><hr class="dropdown-divider"></li>
-						<li><a class="dropdown-item text-danger" href="/logout"><i
-								class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a></li>
-					</ul></li>
-			</ul>
-		</div>
-	</nav>
+        <div class="sidebar-content">
+            <ul class="nav flex-column" id="adminMenu">
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin">
+                        <i class="fa-solid fa-gauge-high"></i> Dashboard
+                    </a>
+                </li>
 
-	<div class="container-fluid">
-		<div class="row">
+                <div class="sidebar-heading">Sản phẩm</div>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/categories">
+                        <i class="fa-solid fa-layer-group"></i> Thể loại
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/authors">
+                        <i class="fa-solid fa-user-pen"></i> Tác giả
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/books">
+                        <i class="fa-solid fa-book"></i> Sách
+                    </a>
+                </li>
 
-			<div
-				class="col-md-2 bg-white vh-100 p-3 shadow-sm d-none d-md-block position-fixed"
-				style="overflow-y: auto;">
-				<ul class="nav flex-column nav-pills">
+                <div class="sidebar-heading">Kinh doanh</div>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/inventory">
+                        <i class="fa-solid fa-warehouse"></i> Kho hàng
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/orders">
+                        <i class="fa-solid fa-cart-shopping"></i> Đơn hàng
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/customers">
+                        <i class="fa-solid fa-users"></i> Khách hàng
+                    </a>
+                </li>
 
-					<li class="nav-item"><a class="nav-link" href="/admin"> <i
-							class="fa-solid fa-gauge me-2"></i> Dashboard
-					</a></li>
+                <div class="sidebar-heading">Tài chính</div>
+                <li class="nav-item">
+                    <a class="nav-link" href="/revenues">
+                        <i class="fa-solid fa-money-bill-trend-up"></i> Doanh thu
+                    </a>
+                </li>
 
-					<div class="sidebar-heading">Danh mục sản phẩm</div>
+                <div class="sidebar-heading">Marketing</div>
+                <li class="nav-item">
+                    <a class="nav-link" href="/promotions/create">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Tạo Khuyến mãi
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/promotions/list">
+                        <i class="fa-solid fa-tags"></i> Danh sách KM
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/featured/bestseller}">
+                        <i class="fa-solid fa-fire text-warning"></i> Sách bán chạy
+                    </a>
+                </li>
 
-					<li class="nav-item"><a class="nav-link"
-						href="/admin/categories"> <i class="fa-solid fa-list me-2"></i>
-							Thể loại
-					</a></li>
-					<li class="nav-item"><a class="nav-link" href="/admin/authors">
-							<i class="fa-solid fa-pen-nib me-2"></i> Tác giả
-					</a></li>
-					<li class="nav-item"><a class="nav-link" href="/admin/books">
-							<i class="fa-solid fa-book me-2"></i> Sách
-					</a></li>
+                <th:block th:if="${session.currentUser != null and session.currentUser.role.name() == 'ADMIN'}">
+                    <div class="sidebar-heading text-danger">Hệ thống</div>
+                    <li class="nav-item">
+                        <a class="nav-link text-danger" href="/admin/users">
+                            <i class="fa-solid fa-user-gear"></i> Nhân viên
+                        </a>
+                    </li>
+                </th:block>
 
-					<div class="sidebar-heading">Kinh doanh</div>
+            </ul>
+        </div>
+    </div>
 
-					<li class="nav-item"><a class="nav-link"
-						href="/admin/inventory"> <i class="fa-solid fa-warehouse me-2"></i>
-							Kho hàng
-					</a></li>
-					<li class="nav-item"><a class="nav-link" href="/admin/orders">
-							<i class="fa-solid fa-cart-shopping me-2"></i> Đơn hàng
-					</a></li>
-					<li class="nav-item"><a class="nav-link"
-						href="/admin/customers"> <i class="fa-solid fa-users me-2"></i>
-							Khách hàng
-					</a></li>
+    <nav class="navbar navbar-expand-lg px-4">
+        <div class="container-fluid p-0">
+            <button class="btn btn-light d-md-none me-2"><i class="fa-solid fa-bars"></i></button>
+            
+            <h5 class="m-0 text-secondary fw-bold">Hệ thống quản trị</h5>
 
-					<div class="sidebar-heading">Quản lý Thanh toán</div>
+            <div class="collapse navbar-collapse justify-content-end">
+                <div class="dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown">
+                        <img src="https://ui-avatars.com/api/?name=Admin&background=005c97&color=fff" class="rounded-circle shadow-sm" width="38" height="38" alt="Avatar">
+                        <div class="d-none d-md-block text-end" style="line-height: 1.2;">
+                            <span class="d-block fw-bold text-dark small" th:text="${session.currentUser != null ? session.currentUser.fullname : 'Quản trị viên'}">Admin</span>
+                            <small class="text-muted" style="font-size: 0.75rem;">Online</small>
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                        <li><a class="dropdown-item py-2" href="#"><i class="fa-regular fa-user me-2"></i> Hồ sơ</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger py-2 fw-bold" href="/logout"><i class="fa-solid fa-power-off me-2"></i> Đăng xuất</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-					<li class="nav-item"><a class="nav-link" href="/revenues">
-							<i class="fa-solid fa-cart-shopping me-2"></i> Doanh thu & Hoa
-							hồng
-					</a></li>
+    <div class="main-content">
+        <div th:replace="${content}"></div>
+    </div>
 
-					<div class="sidebar-heading">Marketing & Khuyến mại</div>
-
-					<li class="nav-item"><a class="nav-link"
-						href="/promotions/create"> <i
-							class="fa-solid fa-warehouse me-2"></i> Tạo chương trình khuyến
-							mãi
-					</a></li>
-					<li class="nav-item"><a class="nav-link"
-						href="/promotions/list"> <i
-							class="fa-solid fa-cart-shopping me-2"></i> Danh sách khuyến mãi
-					</a></li>
-					<li class="nav-item"><a class="nav-link"
-						th:href="@{/featured/bestseller}"> <i
-							class="fa-solid fa-fire me-2"></i> Sách bán chạy
-					</a></li>
-
-
-					<th:block
-						th:if="${session.currentUser != null and session.currentUser.role.name() == 'ADMIN'}">
-						<div class="sidebar-heading text-danger">Hệ thống</div>
-						<li class="nav-item"><a class="nav-link text-danger"
-							href="/admin/users"> <i class="fa-solid fa-user-shield me-2"></i>
-								Quản lý Nhân viên
-						</a></li>
-					</th:block>
-
-				</ul>
-			</div>
-
-			<div class="col-md-10 offset-md-2 p-4">
-				<div th:replace="${content}"></div>
-
-
-			</div>
-
-		</div>
-	</div>
-
-	<script
-		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var currentPath = window.location.pathname;
+            var menuItems = document.querySelectorAll('#adminMenu .nav-link');
+            
+            menuItems.forEach(function(item) {
+                var href = item.getAttribute('href');
+                if (href !== '/admin' && currentPath.includes(href)) {
+                    item.classList.add('active');
+                } else if (href === '/admin' && currentPath === '/admin') {
+                    item.classList.add('active');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
