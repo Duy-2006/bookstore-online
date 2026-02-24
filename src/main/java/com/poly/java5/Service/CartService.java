@@ -51,6 +51,9 @@ public class CartService {
 	// ================= ADD =================
 
 	public Map<String, Object> addToCart(Integer userId, Integer bookId, Integer qty) {
+		System.out.println("USER ID: " + userId);
+		System.out.println("BOOK ID: " + bookId);
+		System.out.println("Tồn tại trong DB: " + (em.find(Book.class, bookId) != null));
 
 		if (qty <= 0)
 			throw new RuntimeException("Số lượng không hợp lệ");
@@ -67,6 +70,7 @@ public class CartService {
 				.setParameter("cid", cart.getId()).setParameter("bid", bookId).getResultList();
 
 		CartDetail cd;
+		
 
 		if (!list.isEmpty()) {
 			cd = list.get(0);

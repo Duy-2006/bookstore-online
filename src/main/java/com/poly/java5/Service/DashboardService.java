@@ -41,7 +41,7 @@ public class DashboardService {
 
         // top sách bán chạy
         List<Object[]> rawTopBooks =
-                orderDetailRepository.findTopSellingBooks(PageRequest.of(0,5));
+                orderDetailRepository.findBestSellerBooks();
 
         List<Map<String,Object>> topBooks = rawTopBooks.stream().map(o -> {
             Map<String,Object> book = new HashMap<>();
