@@ -58,8 +58,8 @@
 
 <div th:each="item : ${cartDetails}" class="flex gap-4 py-4">
 
-  <img th:src="${item.imageUrl}"
-       class="w-20 h-28 rounded-xl object-cover"/>
+  <img th:src="@{/uploads/{img}(img=${item.imageUrl})}"
+     class="w-20 h-28 rounded-xl object-cover"/>
 
   <div class="flex-1">
     <p class="font-bold leading-tight"

@@ -88,7 +88,7 @@ public class LoginController {
         Utils.clearUserSession(request);
 
         // 👉 quay về trang login hoặc home
-        return "redirect:/home";
+        return "redirect:/login";
     }
 }
 

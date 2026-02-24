@@ -113,8 +113,11 @@ button {
 
 			<h3>Tạo chương trình khuyến mãi</h3>
 
-			<form th:action="@{/admin/promotions/save}" th:object="${promotion}"
-				method="post">
+			<form th:action="@{/admin/promotions/update}"
+				th:object="${promotion}" method="post">
+
+				<input type="hidden" th:field="*{id}">
+
 
 				<!-- tên -->
 				<div class="form-group">
@@ -161,7 +164,9 @@ button {
 					<div class="checkbox-list">
 						<div th:each="b : ${books}" class="item-row">
 							<span th:text="${b.title}"></span> <input type="checkbox"
-								name="bookIds" th:value="${b.id}">
+								name="bookIds" th:value="${b.id}"
+								th:checked="${promotion.books.contains(b)}">
+
 						</div>
 
 					</div>
@@ -171,7 +176,9 @@ button {
 					<div class="checkbox-list">
 						<div th:each="c : ${categories}" class="item-row">
 							<span th:text="${c.name}"></span><input type="checkbox"
-								name="categoryIds" th:value="${c.id}">
+								name="categoryIds" th:value="${c.id}"
+								th:checked="${promotion.categories.contains(c)}">
+
 						</div>
 					</div>
 				</div>

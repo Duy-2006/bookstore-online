@@ -48,10 +48,12 @@
                             <tr th:each="book : ${books}">
                                 <td class="text-center">
                                     <div class="position-relative d-inline-block">
-                                        <img th:src="@{/images/books/{img}(img=${book.imageUrl})}"
-                                             class="rounded shadow-sm border"
-                                             onerror="this.src='https://placehold.co/50x75?text=No+Img'"
-                                             style="width: 50px; height: 75px; object-fit: cover;">
+                                        <img th:src="${#strings.isEmpty(book.imageUrl)} 
+        ? @{/images/book-default.jpg} 
+        : @{/uploads/{img}(img=${book.imageUrl})}"
+     class="rounded shadow-sm border"
+     style="width: 50px; height: 75px; object-fit: cover;"
+     onerror="this.src='https://placehold.co/50x75?text=No+Img'">
                                     </div>
                                 </td>
 

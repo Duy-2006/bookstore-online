@@ -19,7 +19,7 @@
          class="banner-slide absolute inset-0 opacity-0 transition-opacity duration-1000"
          th:classappend="${stat.index == 0} ? 'opacity-100 z-10' : 'z-0'">
 
-      <img th:src="@{${banner.imageUrl}}"
+      <img th:src="@{${banner.image_url}}"
            class="w-full h-full object-cover">
 
       <!-- overlay -->
@@ -51,8 +51,10 @@
          class="bg-white rounded-xl shadow hover:shadow-xl transition p-4 group">
 
       <div class="h-[220px] rounded-lg overflow-hidden mb-3 bg-gray-100">
-        <img th:src="@{/images/book-default.jpg}"
-             class="w-full h-full object-cover group-hover:scale-105 transition">
+        <img th:src="${#strings.isEmpty(b.imageUrl)} 
+              ? @{/images/book-default.jpg} 
+              : @{/uploads/{img}(img=${b.imageUrl})}"
+     class="w-full h-full object-cover group-hover:scale-105 transition">
       </div>
 
       <p class="font-bold text-sm line-clamp-2"
@@ -79,16 +81,34 @@
 </main>
 
 <!-- ================= SCRIPT ================= -->
-<script th:inline="javascript">
+<script>
 function addToCart(btn){
   const id = btn.dataset.bookId;
-  fetch(/*[[@{/cart/api/add}]]*/,{
+
+  fetch('/cart/api/add',{
     method:'POST',
-    headers:{'Content-Type':'application/x-www-form-urlencoded'},
-    body:new URLSearchParams({bookId:id,quantity:1})
+    headers:{
+      'Content-Type':'application/x-www-form-urlencoded'
+    },
+    body:new URLSearchParams({
+      bookId:id,
+      quantity:1
+    })
   })
-  .then(r=>r.json())
-  .then(d=>alert(d.message));
+  .then(response => response.json())
+  .then(data => {
+    console.log("Response:", data);
+
+    if(data.success){
+      alert("✔ " + data.message);
+    }else{
+      alert("❌ " + data.message);
+    }
+  })
+  .catch(error => {
+    console.error("Error:", error);
+    alert("Lỗi kết nối server!");
+  });
 }
 </script>
 

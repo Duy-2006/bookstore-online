@@ -10,7 +10,7 @@ import lombok.ToString; // Đã thêm import này
 
 @Data
 @Entity
-@Table(name = "Authors")
+@Table(name = "authors")
 public class Author implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
