@@ -15,7 +15,7 @@ public class Banner {
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	    private Integer id;
 
-	    private String imageUrl; // /images/banners/banner1.jpg
+	    private String image_url; // /images/banners/banner1.jpg
 
 	    private String link; // /book/123 (optional)
 

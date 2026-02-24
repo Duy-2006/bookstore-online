@@ -185,25 +185,44 @@ public class AdminController {
     }
 
     @PostMapping("/books/save")
-    public String saveBook(@Valid @ModelAttribute("book") Book book, BindingResult result,
-            @RequestParam("imageFile") MultipartFile file, Model model) {
+    public String saveBook(@Valid @ModelAttribute("book") Book book,
+                           BindingResult result,
+                           @RequestParam("imageFile") MultipartFile file,
+                           Model model) {
+
         if (result.hasErrors()) {
             model.addAttribute("categories", catRepo.findAll());
             model.addAttribute("authors", authorRepo.findAll());
             return "admin/book-form";
         }
 
-        if (!file.isEmpty()) {
-            try {
-                String filename = file.getOriginalFilename();
-                File saveFile = new ClassPathResource("static/images/books").getFile();
-                Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + filename);
+        try {
+
+            // Nếu có upload ảnh mới
+            if (!file.isEmpty()) {
+
+                // Tạo tên file tránh trùng
+                String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+
+                // Thư mục lưu ngoài dự án
+                String uploadDir = "C:/uploads/books/";
+
+                File dir = new File(uploadDir);
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+
+                Path path = Paths.get(uploadDir + filename);
                 Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-                book.setImageUrl(filename);
-            } catch (Exception e) {
-                e.printStackTrace();
+
+                // Lưu đường dẫn vào DB
+                book.setImageUrl("books/" + filename);
             }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
         bookRepo.save(book);
         return "redirect:/admin/books";
     }

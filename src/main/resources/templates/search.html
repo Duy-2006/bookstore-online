@@ -17,10 +17,12 @@
         <div th:each="b : ${books}"
              class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition">
 
-            <div class="h-[200px] bg-gray-200 rounded mb-3">
-                <img th:src="@{/images/book-default.jpg}"
-                     class="w-full h-full object-cover rounded">
-            </div>
+            <div class="h-[200px] bg-gray-200 rounded mb-3 overflow-hidden">
+    <img th:src="${#strings.isEmpty(b.imageUrl)} 
+            ? @{/images/book-default.jpg} 
+            : @{/uploads/{img}(img=${b.imageUrl})}"
+         class="w-full h-full object-cover rounded">
+</div>
 
             <p class="font-bold text-sm line-clamp-2"
                th:text="${b.title}"></p>
