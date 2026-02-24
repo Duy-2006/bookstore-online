@@ -127,19 +127,21 @@ public class CartService {
 
 	public Map<String, Object> removeFromCart(Integer userId, Integer cartDetailId) {
 
-		CartDetail cd = em.find(CartDetail.class, cartDetailId);
-		if (cd == null)
-			throw new RuntimeException("Không tìm thấy sản phẩm");
+    CartDetail cd = em.find(CartDetail.class, cartDetailId);
+    if (cd == null)
+        throw new RuntimeException("Không tìm thấy sản phẩm");
 
-		if (!cd.getCart().getUser().getId().equals(userId))
-			throw new RuntimeException("Không có quyền");
+    if (!cd.getCart().getUser().getId().equals(userId))
+        throw new RuntimeException("Không có quyền");
 
-		em.remove(cd);
+    Cart cart = cd.getCart();   // LƯU TRƯỚC
 
-		cd.getCart().setUpdatedDate(LocalDateTime.now());
+    em.remove(cd);
 
-		return getCartSummary(userId);
-	}
+    cart.setUpdatedDate(LocalDateTime.now()); // dùng cart đã lưu
+
+    return getCartSummary(userId);
+}
 
 	// ================= SELECT =================
 
