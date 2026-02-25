@@ -1,6 +1,7 @@
 package com.poly.java5.Controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.poly.java5.Entity.Promotion;
 import com.poly.java5.Repository.BookRepository;
@@ -29,83 +31,65 @@ public class AdminPromotionController {
     private final CategoryRepository categoryRepository;
     private final PromotionRepository promotionRepository;
 
-    // ================== LIST ==================
+    // LIST
     @GetMapping
     public String list(Model model) {
         model.addAttribute("promotions", promotionService.getAll());
-        return "promotion/list"; 
+        return "promotion/list";
     }
 
-    // ================== CREATE FORM ==================
+    // CREATE FORM
     @GetMapping("/create")
     public String createForm(Model model) {
-
         model.addAttribute("promotion", new Promotion());
         model.addAttribute("books", bookRepository.findByDeletedFalse());
         model.addAttribute("categories", categoryRepository.findAll());
-
         return "promotion/create";
     }
 
-    // ================== SAVE ==================
+    // SAVE
     @PostMapping("/save")
     public String save(@ModelAttribute Promotion promotion,
                        @RequestParam(required = false) List<Long> bookIds,
-                       @RequestParam(required = false) List<Long> categoryIds) {
+                       @RequestParam(required = false) List<Long> categoryIds,
+                       RedirectAttributes redirectAttributes) {
 
         promotionService.createPromotion(promotion, bookIds, categoryIds);
-        
-        if ((bookIds == null || bookIds.isEmpty()) 
-        	    && (categoryIds == null || categoryIds.isEmpty())) {
 
-        	    // hiểu là áp dụng toàn sàn
-        	}
-
+        redirectAttributes.addFlashAttribute("successMessage", "Tạo khuyến mãi thành công!");
         return "redirect:/admin/promotions";
     }
- // ================== EDIT FORM ==================
+
+    // EDIT FORM - ĐÃ SỬA
     @GetMapping("/edit/{id}")
-    public String editForm(@PathVariable Long id, Model model) {
+    public String editForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        Optional<Promotion> optionalPromotion = promotionService.findById(id);  // ← dùng Optional
 
-        Promotion promotion = promotionService.getById(id);
-
-        model.addAttribute("promotion", promotion);
-        model.addAttribute("books", bookRepository.findByDeletedFalse());
-        model.addAttribute("categories", categoryRepository.findAll());
-
-        return "promotion/edit";
+        if (optionalPromotion.isPresent()) {
+            model.addAttribute("promotion", optionalPromotion.get());
+            model.addAttribute("books", bookRepository.findByDeletedFalse());
+            model.addAttribute("categories", categoryRepository.findAll());
+            return "promotion/edit";
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy khuyến mãi với ID: " + id);
+            return "redirect:/admin/promotions";
+        }
     }
+
+    // UPDATE - bạn đã có logic tốt, chỉ thêm flash message
     @PostMapping("/update")
     public String updatePromotion(
             @ModelAttribute Promotion promotion,
             @RequestParam(required = false) List<Long> bookIds,
-            @RequestParam(required = false) List<Long> categoryIds
-    ) {
+            @RequestParam(required = false) List<Long> categoryIds,
+            RedirectAttributes redirectAttributes) {
 
-        Promotion old = promotionRepository.findById(promotion.getId()).orElseThrow();
-
-        old.setName(promotion.getName());
-        old.setDiscountType(promotion.getDiscountType());
-        old.setDiscountValue(promotion.getDiscountValue());
-        old.setStartDate(promotion.getStartDate());
-        old.setEndDate(promotion.getEndDate());
-        old.setStatus(promotion.getStatus());
-
-        // cập nhật book
-        old.getBooks().clear();
-        if (bookIds != null) {
-            old.setBooks(bookRepository.findAllById(bookIds));
+        try {
+            promotionService.updatePromotion(promotion, bookIds, categoryIds);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật khuyến mãi thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi cập nhật: " + e.getMessage());
         }
-
-        // cập nhật category
-        old.getCategories().clear();
-        if (categoryIds != null) {
-            old.setCategories(categoryRepository.findAllById(categoryIds));
-        }
-
-        promotionRepository.save(old);
-
         return "redirect:/admin/promotions";
     }
-
 }
