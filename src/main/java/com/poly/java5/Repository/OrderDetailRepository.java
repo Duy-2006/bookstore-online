@@ -12,16 +12,16 @@ import com.poly.java5.Entity.OrderDetail;
 
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Integer> {
 	
-	@Query("""
-		    SELECT od.book, SUM(od.quantity)
-		    FROM OrderDetail od
-		    JOIN od.order o
-		    WHERE o.status IN ('CONFIRMED', 'COMPLETED')
-		      AND o.paymentStatus = 'PAID'
-		    GROUP BY od.book
-		    ORDER BY SUM(od.quantity) DESC
-		""")
-		List<Object[]> findBestSellerBooks();
+	 @Query("""
+	           SELECT b.id, b.title, SUM(od.quantity)
+	           FROM OrderDetail od
+	           JOIN od.order o
+	           JOIN od.book b
+	           WHERE o.status = 'COMPLETED'
+	           GROUP BY b.id, b.title
+	           ORDER BY SUM(od.quantity) DESC
+	           """)
+	    List<Object[]> findBestSellerBooks();
 
 	
 

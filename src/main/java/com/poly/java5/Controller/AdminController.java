@@ -338,11 +338,11 @@ public class AdminController {
 
 
 	// ================= QUẢN LÝ ĐƠN HÀNG (ORDER) =================
-	@GetMapping("/orders")
-	public String listOrders(Model model) {
-		model.addAttribute("orders", orderRepo.findByUserIdOrderByOrderDateDesc(null));
-		return "admin/orders";
-	}
+    @GetMapping("/orders")
+    public String listOrders(Model model) {
+        model.addAttribute("orders", orderRepo.findAll());
+        return "admin/orders";
+    }
 
     // ================= QUẢN LÝ NHÂN SỰ (USERS) =================
     @GetMapping("/users")

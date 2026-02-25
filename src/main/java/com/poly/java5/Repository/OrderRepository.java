@@ -41,7 +41,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     @Query("""
     	       SELECT COALESCE(SUM(o.totalAmount),0)
     	       FROM Order o
-    	       WHERE o.paymentStatus = 'PAID'
+    	       WHERE o.status = 'COMPLETED'
     	       """)
     	BigDecimal getTotalRevenue();
 
@@ -49,7 +49,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     	@Query("""
     	       SELECT COALESCE(SUM(o.totalAmount),0)
     	       FROM Order o
-    	       WHERE o.paymentStatus = 'PAID'
+    	       WHERE o.status = 'COMPLETED'
     	       AND o.orderDate >= :startOfDay
     	       AND o.orderDate < :endOfDay
     	       """)
@@ -70,7 +70,8 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
     	@Query("SELECT COUNT(o) FROM Order o WHERE o.status = 'CANCELLED'")
     	long countCancelledOrders();
-
+    	
+    	
 
 
 }

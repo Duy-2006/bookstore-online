@@ -36,7 +36,7 @@ public class DashboardService {
 
         // đơn hàng
         data.put("todayOrders", orderRepository.countTodayOrders(startOfDay, endOfDay));
-        data.put("deliveredOrders", orderRepository.countByStatus("DELIVERED"));
+        data.put("deliveredOrders", orderRepository.countByStatus("COMPLETED"));
         data.put("cancelledOrders", orderRepository.countCancelledOrders());
 
         // top sách bán chạy
