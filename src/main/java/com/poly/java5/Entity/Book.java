@@ -53,6 +53,17 @@ public class Book implements Serializable {
 
     @Column(name = "created_date", updatable = false)
     private LocalDateTime createdDate;
+    
+    @Transient
+    private BigDecimal tempDiscountPercent;
+
+    public BigDecimal getTempDiscountPercent() {
+        return tempDiscountPercent;
+    }
+
+    public void setTempDiscountPercent(BigDecimal tempDiscountPercent) {
+        this.tempDiscountPercent = tempDiscountPercent;
+    }
 
     // 4. QUAN HỆ (RELATIONSHIPS) - CÓ VALIDATION
     @NotNull(message = "Vui lòng chọn tác giả")
