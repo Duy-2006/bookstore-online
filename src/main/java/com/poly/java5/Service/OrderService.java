@@ -75,5 +75,8 @@ public class OrderService {
 	    return orderRepository
 	            .findByUserIdAndStatusOrderByOrderDateDesc(userId, status);
 	}
-
+	
+	public List<Order> findAll() {
+	    return orderRepository.findAll();
+	}
 }

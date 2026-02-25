@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.poly.java5.Entity.Order;
@@ -19,21 +18,29 @@ import lombok.RequiredArgsConstructor;
 public class OrderController {
 	private final OrderService orderService;
 
-	// Trang sau khi đặt hàng thành công
-	@GetMapping("/order-success")
-	public String success(@RequestParam("code") String code, HttpSession session, Model model) {
 
-		Integer userId = (Integer) session.getAttribute("USER_ID");
-		if (userId == null)
-			return "redirect:/login";
+	 @GetMapping("/orders")
+	 public String listOrders(Model model) {
+	     List<Order> orders = orderService.findAll();
+	     model.addAttribute("orders", orders);
+	     return "orders"; 
+	 }
+	 
+	 @GetMapping("/order-success")
+		public String success(@RequestParam("code") String code, HttpSession session, Model model) {
 
-		Order order = orderService.findByCodeAndUser(code, userId);
+			Integer userId = (Integer) session.getAttribute("USER_ID");
+			if (userId == null)
+				return "redirect:/login";
 
-		model.addAttribute("order", order);
-		model.addAttribute("orderDetails", order.getOrderDetails());
+			Order order = orderService.findByCodeAndUser(code, userId);
 
-		return "order-success";
-	}
+			model.addAttribute("order", order);
+			model.addAttribute("orderDetails", order.getOrderDetails());
+
+			return "order-success";
+		}
+
 
 	// hiện chi tiết đơn hàng
 	@GetMapping("/orders/detail")
@@ -62,5 +69,7 @@ public class OrderController {
 
 		return "order-list";
 	}
+
+	 //code sua
 
 }

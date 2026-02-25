@@ -1,101 +1,41 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
-<title>Đơn hàng của tôi</title>
+<title>Quản lý đơn hàng</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-100 p-10">
 
-	<div class="max-w-5xl mx-auto px-4 py-8">
+	<div class="max-w-6xl mx-auto bg-white p-8 rounded-2xl shadow">
 
-		<!-- ================= HEADER ================= -->
-		<div class="flex justify-between items-center mb-6">
-			<h1 class="text-2xl font-extrabold">🧾 Đơn hàng của tôi</h1>
+		<h1 class="text-2xl font-bold mb-6">Danh sách Đơn Hàng</h1>
 
-			<a th:href="@{/home}"
-				class="text-sm font-bold text-blue-600 hover:underline"> ← Tiếp
-				tục mua sắm </a>
-		</div>
+		<table class="w-full border">
+			<thead class="bg-gray-200">
+				<tr>
+					<th>Mã đơn</th>
+					<th>Khách hàng</th>
+					<th>Tổng tiền</th>
+					<th>Trạng thái</th>
+					<th>Thao tác</th>
+				</tr>
+			</thead>
 
-		<!-- ================= FILTER FORM ================= -->
-		<form th:action="@{/my-orders}" method="get"
-			class="bg-white rounded-xl shadow-sm border p-5 mb-6 flex gap-4 items-center">
-
-			<label class="font-bold text-sm">Trạng thái:</label> <select
-				name="status" class="border rounded-lg px-3 py-2 text-sm">
-				<option value="">Tất cả</option>
-				<option value="PENDING" th:selected="${currentStatus == 'PENDING'}">
-					Chờ xử lý</option>
-				<option value="CONFIRMED"
-					th:selected="${currentStatus == 'CONFIRMED'}">Đã xác nhận
-				</option>
-				<option value="SHIPPING"
-					th:selected="${currentStatus == 'SHIPPING'}">Đang giao</option>
-				<option value="DELIVERED"
-					th:selected="${currentStatus == 'DELIVERED'}">Đã giao</option>
-				<option value="CANCELLED"
-					th:selected="${currentStatus == 'CANCELLED'}">Đã hủy</option>
-			</select>
-
-			<button type="submit"
-				class="bg-black text-white px-5 py-2 rounded-lg text-sm font-bold hover:opacity-90">
-				Lọc</button>
-		</form>
-
-		<!-- ================= ORDER LIST ================= -->
-		<div class="space-y-4">
-
-			<div th:each="order : ${orders}"
-				class="bg-white border rounded-xl p-6 shadow-sm">
-
-				<div class="flex justify-between items-start">
-					<div>
-						<p class="font-bold">
-							Mã đơn: <span th:text="${order.orderCode}"></span>
-						</p>
-
-						<p class="text-sm text-gray-500 mt-1"
-							th:text="${#temporals.format(order.orderDate,'dd/MM/yyyy HH:mm')}">
-						</p>
-					</div>
-
-					<!-- STATUS BADGE -->
-					<span th:switch="${order.status}"
-						class="px-3 py-1 rounded-full text-sm font-semibold"> <span
-						th:case="'PENDING'" class="bg-gray-200 text-gray-800">PENDING</span>
-
-						<span th:case="'CONFIRMED'" class="bg-blue-200 text-blue-800">CONFIRMED</span>
-
-						<span th:case="'SHIPPING'" class="bg-yellow-200 text-yellow-800">SHIPPING</span>
-
-						<span th:case="'DELIVERED'" class="bg-green-200 text-green-800">DELIVERED</span>
-
-						<span th:case="*" class="bg-red-200 text-red-800">CANCELLED</span>
-					</span>
-
-				</div>
-
-				<div class="flex justify-between items-center mt-4">
-					<p class="font-extrabold text-lg">
-						Tổng tiền: <span th:text="${order.totalAmount} + 'đ'"></span>
-					</p>
-
-					<a th:href="@{/orders/detail(code=${order.orderCode})}"
-						class="font-bold text-blue-600 hover:underline"> Xem chi tiết
-						→ </a>
-				</div>
-			</div>
-
-			<!-- EMPTY -->
-			<div th:if="${orders == null || orders.isEmpty()}"
-				class="bg-white border rounded-xl p-10 text-center text-gray-500">
-				Bạn chưa có đơn hàng nào</div>
-
-		</div>
+			<tbody>
+				<tr th:each="o : ${orders}" class="border-t text-center">
+					<td th:text="${o.orderCode}"></td>
+					<td th:text="${o.customerName}"></td>
+					<td th:text="${o.totalAmount} + 'đ'"></td>
+					<td th:text="${o.status}"></td>
+					<td><a th:href="@{/orders/{id}(id=${o.id})}"
+						class="text-blue-600">Chi tiết</a></td>
+				</tr>
+			</tbody>
+		</table>
 
 	</div>
-
 </body>
 </html>
+
