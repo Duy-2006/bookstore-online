@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Quản lý đơn hàng</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 p-10">
+
+	<div class="max-w-6xl mx-auto bg-white p-8 rounded-2xl shadow">
+
+		<h1 class="text-2xl font-bold mb-6">Danh sách Đơn Hàng</h1>
+
+		<table class="w-full border">
+			<thead class="bg-gray-200">
+				<tr>
+					<th>Mã đơn</th>
+					<th>Khách hàng</th>
+					<th>Tổng tiền</th>
+					<th>Trạng thái</th>
+					<th>Thao tác</th>
+				</tr>
+			</thead>
+
+			<tbody>
+				<tr th:each="o : ${orders}" class="border-t text-center">
+					<td th:text="${o.orderCode}"></td>
+					<td th:text="${o.customerName}"></td>
+					<td th:text="${o.totalAmount} + 'đ'"></td>
+					<td th:text="${o.status}"></td>
+					<td><a th:href="@{/orders/{id}(id=${o.id})}"
+						class="text-blue-600">Chi tiết</a></td>
+				</tr>
+			</tbody>
+		</table>
+
+	</div>
+</body>
+</html>

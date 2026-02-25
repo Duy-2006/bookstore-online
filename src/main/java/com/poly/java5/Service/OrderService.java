@@ -39,5 +39,8 @@ public class OrderService {
 	    return orderRepository.findByOrderCodeFull(code)
 	        .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
 	}
-
+	
+	public List<Order> findAll() {
+	    return orderRepository.findAll();
+	}
 }
