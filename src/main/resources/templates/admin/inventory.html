@@ -23,7 +23,7 @@
         </div>
         <div>
             <h6 class="fw-bold mb-1 text-dark">Cảnh báo tồn kho</h6>
-            <small class="text-dark">Có <strong th:text="${lowStockBooks.size()}"></strong> sách dưới định mức (10 cuốn). Vui lòng nhập thêm ngay!</small>
+            <small class="text-dark">Có <strong th:text="${lowStockBooks.size()}"></strong> sách dưới định mức (10 cuốn). Vui lòng điều chỉnh kho ngay!</small>
         </div>
     </div>
 
@@ -73,9 +73,9 @@
                                     </td>
                                     <td class="text-end pe-4">
                                         <button type="button" class="btn btn-sm btn-outline-primary fw-bold shadow-sm hover-scale"
-                                                data-bs-toggle="modal" data-bs-target="#importModal"
+                                                data-bs-toggle="modal" data-bs-target="#inventoryModal"
                                                 th:attr="data-id=${book.id}, data-title=${book.title}">
-                                            <i class="fa-solid fa-dolly me-1"></i> Nhập hàng
+                                            <i class="fa-solid fa-sliders me-1"></i> Điều chỉnh
                                         </button>
                                     </td>
                                 </tr>
@@ -101,7 +101,7 @@
                                     <th class="ps-3">Thời gian</th>
                                     <th>Sách</th>
                                     <th class="text-center">Thay đổi</th>
-                                    <th>Loại</th>
+                                    <th>Phân loại</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -111,18 +111,18 @@
                                         <span th:text="${log.logDate != null ? #temporals.format(log.logDate, 'HH:mm') : ''}"></span>
                                     </td>
                                     <td>
-                                        <span class="d-block text-truncate fw-bold text-primary" style="max-width: 130px;" 
+                                        <span class="d-block text-truncate fw-bold text-primary" style="max-width: 110px;" 
                                               th:text="${log.book.title}"></span>
                                     </td>
                                     <td class="text-center fw-bold fs-6">
-                                        <span th:if="${log.type == 'IMPORT'}" class="text-success" th:text="'+' + ${log.changeAmount}"></span>
-                                        <span th:if="${log.type == 'EXPORT'}" class="text-danger" th:text="'-' + ${log.changeAmount}"></span>
+                                        <span th:if="${log.type == 'IMPORT' or log.type == 'RETURN'}" class="text-success" th:text="'+' + ${log.changeAmount}"></span>
+                                        <span th:if="${log.type == 'EXPORT' or log.type == 'DEFECT'}" class="text-danger" th:text="'-' + ${log.changeAmount}"></span>
                                     </td>
                                     <td>
-                                        <span class="badge" 
-                                              th:classappend="${log.type == 'IMPORT'} ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
-                                              th:text="${log.type == 'IMPORT' ? 'Nhập kho' : 'Xuất bán'}">
-                                        </span>
+                                        <span th:if="${log.type == 'IMPORT'}" class="badge bg-success-subtle text-success border border-success-subtle"><i class="fa-solid fa-truck-ramp-box"></i> Nhập NCC</span>
+                                        <span th:if="${log.type == 'RETURN'}" class="badge bg-info-subtle text-info border border-info-subtle"><i class="fa-solid fa-rotate-left"></i> Khách trả</span>
+                                        <span th:if="${log.type == 'DEFECT'}" class="badge bg-warning-subtle text-warning border border-warning-subtle"><i class="fa-solid fa-heart-crack"></i> Hàng hỏng</span>
+                                        <span th:if="${log.type == 'EXPORT'}" class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="fa-solid fa-box-open"></i> Xuất bán</span>
                                     </td>
                                 </tr>
                                 <tr th:if="${#lists.isEmpty(logs)}">
@@ -139,13 +139,13 @@
     </div>
 </div>
 
-<div class="modal fade" id="importModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade" id="inventoryModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg">
-            <form action="/admin/inventory/import" method="post">
+            <form action="/admin/inventory/transaction" method="post">
                 <div class="modal-header text-white" 
                      style="background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));">
-                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-circle-plus me-2"></i>Nhập Kho Sách</h5>
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-sliders me-2"></i>Điều Chỉnh Kho Hàng</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 
@@ -153,7 +153,7 @@
                     <input type="hidden" name="bookId" id="modalBookId">
                     
                     <div class="mb-3">
-                        <label class="form-label text-secondary fw-bold small text-uppercase">Sách được chọn</label>
+                        <label class="form-label text-secondary fw-bold small text-uppercase">Sách đang chọn</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-book text-primary"></i></span>
                             <input type="text" class="form-control bg-light fw-bold text-dark border-start-0" id="modalBookTitle" readonly>
@@ -162,18 +162,28 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label text-secondary fw-bold small text-uppercase">Số lượng nhập <span class="text-danger">*</span></label>
-                            <input type="number" name="quantity" class="form-control fw-bold text-success" min="1" value="10" required>
+                            <label class="form-label text-secondary fw-bold small text-uppercase">Loại nghiệp vụ <span class="text-danger">*</span></label>
+                            <select name="type" class="form-select fw-bold border-primary" required>
+                                <option value="IMPORT" class="text-success">➕ Nhập hàng (từ Nhà cung cấp)</option>
+                                <option value="RETURN" class="text-info">➕ Khách hàng trả lại</option>
+                                <option value="DEFECT" class="text-warning">➖ Xuất hủy (Hư hỏng/Mất mát)</option>
+                                <option value="EXPORT" class="text-danger">➖ Xuất kho nội bộ / Tặng</option>
+                            </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                             <label class="form-label text-secondary fw-bold small text-uppercase">Người nhập</label>
-                             <input type="text" class="form-control bg-light" value="Admin" readonly>
+                            <label class="form-label text-secondary fw-bold small text-uppercase">Số lượng <span class="text-danger">*</span></label>
+                            <input type="number" name="quantity" class="form-control fw-bold" min="1" value="1" required>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label text-secondary fw-bold small text-uppercase">Ghi chú nhập hàng</label>
-                        <textarea name="note" class="form-control" rows="3" placeholder="Ví dụ: Nhập hàng đợt 1 tháng 10..."></textarea>
+                        <label class="form-label text-secondary fw-bold small text-uppercase">Nhà cung cấp / Nguồn gốc</label>
+                        <input type="text" name="supplier" class="form-control" placeholder="Tên công ty xuất bản, tên khách hàng...">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary fw-bold small text-uppercase">Ghi chú chi tiết</label>
+                        <textarea name="note" class="form-control" rows="2" placeholder="Ví dụ: Nhập đợt 1, Sách rách bìa, Khách đổi trả do nhầm..."></textarea>
                     </div>
                 </div>
                 
@@ -181,7 +191,7 @@
                     <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Hủy bỏ</button>
                     <button type="submit" class="btn btn-primary fw-bold px-4 shadow-sm"
                             style="background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); border: none;">
-                        <i class="fa-solid fa-check me-1"></i> Xác nhận
+                        <i class="fa-solid fa-check me-1"></i> Xác nhận Giao dịch
                     </button>
                 </div>
             </form>
@@ -190,14 +200,14 @@
 </div>
 
 <script>
-    var importModal = document.getElementById('importModal');
-    importModal.addEventListener('show.bs.modal', function (event) {
+    var inventoryModal = document.getElementById('inventoryModal');
+    inventoryModal.addEventListener('show.bs.modal', function (event) {
         var button = event.relatedTarget;
         var id = button.getAttribute('data-id');
         var title = button.getAttribute('data-title');
         
-        var modalIdInput = importModal.querySelector('#modalBookId');
-        var modalTitleInput = importModal.querySelector('#modalBookTitle');
+        var modalIdInput = inventoryModal.querySelector('#modalBookId');
+        var modalTitleInput = inventoryModal.querySelector('#modalBookTitle');
         
         modalIdInput.value = id;
         modalTitleInput.value = title;

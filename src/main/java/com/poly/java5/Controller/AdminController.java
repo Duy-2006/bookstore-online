@@ -224,11 +224,11 @@ public class AdminController {
         return "redirect:/admin/books";
     }
 
-    // ================= QUẢN LÝ KHO (INVENTORY) =================
+ // ================= QUẢN LÝ KHO (INVENTORY) =================
     @GetMapping("/inventory")
     public String inventory(Model model) {
         List<Book> lowStockBooks = bookRepo.findAll().stream()
-                .filter(b -> b.getQuantity() < 10)
+                .filter(b -> b.getQuantity() != null && b.getQuantity() < 10)
                 .collect(Collectors.toList());
         model.addAttribute("lowStockBooks", lowStockBooks);
         model.addAttribute("books", bookRepo.findAll());
@@ -236,81 +236,154 @@ public class AdminController {
         return "admin/inventory";
     }
 
-    @PostMapping("/inventory/import")
-    public String importStock(@RequestParam("bookId") Long bookId, // [FIX] Đã đổi về Long
-                              @RequestParam("quantity") Integer quantity,
-                              @RequestParam("note") String note, 
-                              RedirectAttributes params) {
+    // [NÂNG CẤP] Xử lý đa luồng giao dịch: Nhập/Xuất/Hủy/Trả
+    @PostMapping("/inventory/transaction")
+    public String processTransaction(@RequestParam("bookId") Long bookId, // Giữ kiểu Long theo chuẩn của bạn
+                                     @RequestParam("quantity") Integer quantity,
+                                     @RequestParam("type") String type, // Nhận loại giao dịch (IMPORT, EXPORT, RETURN, DEFECT)
+                                     @RequestParam(value = "supplier", required = false) String supplier, // Nhận tên Nhà cung cấp
+                                     @RequestParam("note") String note, 
+                                     RedirectAttributes params) {
         if (quantity <= 0) {
-            params.addFlashAttribute("error", "Số lượng nhập phải lớn hơn 0");
+            params.addFlashAttribute("error", "Số lượng giao dịch phải lớn hơn 0");
             return "redirect:/admin/inventory";
         }
+        
         Book book = bookRepo.findById(bookId).orElse(null);
         if (book != null) {
-            book.setQuantity(book.getQuantity() + quantity);
+            // 1. Nối tên Nhà cung cấp/Nguồn gốc vào Ghi chú (Nếu có)
+            String finalNote = (supplier != null && !supplier.trim().isEmpty()) 
+                                ? "[Nguồn: " + supplier + "] " + note : note;
+
+            // 2. Xử lý logic Cộng / Trừ tồn kho tùy theo loại giao dịch
+            if ("IMPORT".equals(type) || "RETURN".equals(type)) {
+                // Nhập hàng từ NCC hoặc Khách trả hàng -> Cộng kho
+                book.increaseStock(quantity); 
+                // (Nếu hàm increaseStock báo lỗi do chưa có trong Entity, bạn dùng: book.setQuantity(book.getQuantity() + quantity); )
+            } else if ("EXPORT".equals(type) || "DEFECT".equals(type)) {
+                // Xuất kho hoặc Báo hỏng/Hủy -> Trừ kho
+                try {
+                    book.decreaseStock(quantity); 
+                } catch (IllegalArgumentException e) {
+                    params.addFlashAttribute("error", "Lỗi: Số lượng tồn kho không đủ để xuất/hủy!");
+                    return "redirect:/admin/inventory";
+                }
+            }
+            
             bookRepo.save(book);
 
+            // 3. Ghi nhận Lịch sử (Log)
             InventoryLog log = InventoryLog.builder()
                     .book(book)
                     .changeAmount(quantity)
-                    .type("IMPORT")
-                    .note(note)
+                    .type(type)
+                    .note(finalNote)
                     .build();
             
             inventoryRepo.save(log);
-            params.addFlashAttribute("success", "Đã nhập thêm " + quantity + " cuốn: " + book.getTitle());
+            params.addFlashAttribute("success", "Đã ghi nhận giao dịch thành công cho sách: " + book.getTitle());
+        } else {
+            params.addFlashAttribute("error", "Không tìm thấy sách trong hệ thống!");
         }
+        
         return "redirect:/admin/inventory";
     }
 
-    // ================= QUẢN LÝ ĐƠN HÀNG (ORDER) =================
+ // ================= QUẢN LÝ ĐƠN HÀNG (ORDER) =================
     @GetMapping("/orders")
     public String listOrders(Model model) {
         model.addAttribute("orders", orderRepo.findAllByOrderByOrderDateDesc());
         return "admin/orders";
     }
 
-    // [FIX] Đã đổi về Long
+    // Đã trả lại kiểu Integer để khớp với OrderRepository
     @GetMapping("/orders/detail/{id}")
     public String detailOrder(@PathVariable("id") Integer id, Model model) {
-        // Lưu ý: OrderRepository có thể dùng Integer hoặc Long tùy khai báo của bạn.
-        // Nếu dòng này báo lỗi, hãy đổi tham số id thành Long.
         Order order = orderRepo.findById(id).orElse(null);
         model.addAttribute("order", order);
         return "admin/order-detail";
     }
 
+    // Đã trả lại kiểu Integer và giữ nguyên logic 1 chiều
     @PostMapping("/orders/update/{id}")
-    public String updateOrderStatus(@PathVariable Integer id, @RequestParam String status, RedirectAttributes ra) {
+    public String updateOrderStatus(@PathVariable("id") Integer id, @RequestParam("status") String newStatus, RedirectAttributes ra) {
         Order order = orderRepo.findById(id).orElse(null);
         if (order == null) {
             ra.addFlashAttribute("error", "Không tìm thấy đơn hàng");
             return "redirect:/admin/orders";
         }
-        order.setStatus(status);
-        orderRepo.save(order);
-        ra.addFlashAttribute("success", "Cập nhật trạng thái thành công");
+
+        String currentStatus = order.getStatus();
+        boolean isValidFlow = false;
+
+        // 1. NGHIỆP VỤ LUỒNG 1 CHIỀU: PENDING -> CONFIRMED -> SHIPPING -> COMPLETED
+        if ("PENDING".equals(currentStatus)) {
+            // Đang chờ xác nhận -> Lên: Đã xác nhận HOẶC Hủy
+            if ("CONFIRMED".equals(newStatus) || "CANCELLED".equals(newStatus)) isValidFlow = true;
+        } 
+        else if ("CONFIRMED".equals(currentStatus)) {
+            // Đã xác nhận -> Lên: Đang giao HOẶC Hủy
+            if ("SHIPPING".equals(newStatus) || "CANCELLED".equals(newStatus)) isValidFlow = true;
+        } 
+        else if ("SHIPPING".equals(currentStatus)) {
+            // Đang giao -> Lên: Hoàn thành (Không cho phép hủy khi đang giao)
+            if ("COMPLETED".equals(newStatus)) isValidFlow = true;
+        }
+
+        // 2. Kiểm tra nếu chọn lại trạng thái cũ
+        if (currentStatus != null && currentStatus.equals(newStatus)) {
+            ra.addFlashAttribute("error", "Trạng thái đơn hàng không thay đổi.");
+            return "redirect:/admin/orders/detail/" + id;
+        }
+
+        // 3. Thực thi cập nhật hoặc báo lỗi
+        if (isValidFlow) {
+            order.setStatus(newStatus);
+            orderRepo.save(order);
+            ra.addFlashAttribute("success", "Cập nhật trạng thái thành công!");
+        } else {
+            ra.addFlashAttribute("error", "Lỗi: Thao tác không hợp lệ! Trạng thái đơn hàng chỉ được phép tiến lên theo quy trình.");
+        }
+
         return "redirect:/admin/orders/detail/" + id;
     }
 
-    // ================= QUẢN LÝ KHÁCH HÀNG (CUSTOMERS) =================
+ // ================= QUẢN LÝ KHÁCH HÀNG (CUSTOMERS - CÓ TÌM KIẾM) =================
     @GetMapping("/customers")
-    public String listCustomers(Model model) {
+    public String listCustomers(@RequestParam(name = "keyword", required = false) String keyword, Model model) {
+        // 1. Lấy tất cả khách hàng (Role = USER)
         List<User> customers = userRepo.findAll().stream()
                 .filter(u -> u.getRole() == UserRole.USER)
                 .collect(Collectors.toList());
+
+        // 2. Nếu có từ khóa tìm kiếm -> Thực hiện lọc (Không phân biệt chữ hoa/thường)
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String kw = keyword.toLowerCase().trim();
+            customers = customers.stream()
+                    .filter(u -> (u.getFullName() != null && u.getFullName().toLowerCase().contains(kw)) ||
+                                 (u.getEmail() != null && u.getEmail().toLowerCase().contains(kw)) ||
+                                 (u.getUsername() != null && u.getUsername().toLowerCase().contains(kw)))
+                    .collect(Collectors.toList());
+            
+            // Trả lại từ khóa lên giao diện để giữ chữ trong ô input
+            model.addAttribute("keyword", keyword);
+        }
+
         model.addAttribute("customers", customers);
         return "admin/customers";
     }
 
     @GetMapping("/customers/toggle/{username}")
     public String toggleCustomer(@PathVariable("username") String username, RedirectAttributes params) {
-        if (!isAdmin()) return "redirect:/admin/customers";
+        if (!isAdmin()) {
+            params.addFlashAttribute("error", "Truy cập bị từ chối! Bạn cần quyền Admin.");
+            return "redirect:/admin/customers";
+        }
         User user = userRepo.findByUsername(username);
         if (user != null) {
             user.setActive(!user.getActive());
             userRepo.save(user);
-            params.addFlashAttribute("success", "Đã đổi trạng thái tài khoản [" + username + "]");
+            params.addFlashAttribute("success", "Đã đổi trạng thái hoạt động của tài khoản [" + username + "]");
         }
         return "redirect:/admin/customers";
     }
