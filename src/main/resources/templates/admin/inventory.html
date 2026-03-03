@@ -60,8 +60,11 @@
                                     <td class="ps-4">
                                         <div class="d-flex align-items-center">
                                             <div class="position-relative">
-                                                <img th:src="@{/images/books/{img}(img=${book.imageUrl})}" 
-                                                     class="rounded border shadow-sm" style="width: 45px; height: 65px; object-fit: cover;">
+                                                <img th:src="${#strings.isEmpty(book?.imageUrl)} 
+        ? @{/images/book-default.jpg} 
+        : @{/uploads/{img}(img=${book.imageUrl})}"
+     class="rounded border shadow-sm"
+     style="width: 45px; height: 65px; object-fit: cover;">
                                                 <span th:if="${book.quantity == 0}" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white">
                                                     Hết
                                                 </span>

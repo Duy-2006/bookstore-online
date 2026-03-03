@@ -53,6 +53,11 @@
 				th:unless="${newBooks == null or #lists.isEmpty(newBooks)}">
 				<div th:each="b : ${newBooks}"
 					class="bg-white rounded-xl shadow hover:shadow-xl transition p-4 group relative">
+					<!-- BADGE GIẢM GIÁ -->
+					<span
+						class="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded"
+						th:if="${b.tempDiscountPercent != null}"
+						th:text="'-' + ${b.tempDiscountPercent} + '%'"> </span>
 
 					<!-- Ảnh sách -->
 					<a th:href="@{/book/{id}(id=${b.id})}"
@@ -67,7 +72,7 @@
 						<p
 							class="font-bold text-sm line-clamp-2 hover:text-primary transition"
 							th:text="${b?.title} ?: 'Chưa có tên sách'"></p>
-					</a>				
+					</a>
 
 					<!-- Tác giả -->
 					<p class="text-xs text-gray-500 mt-1"

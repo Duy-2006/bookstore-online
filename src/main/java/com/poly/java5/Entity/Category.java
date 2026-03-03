@@ -20,7 +20,7 @@ import lombok.ToString; // Đã thêm import này
 public class Category implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @NotBlank(message = "Tên thể loại không được để trống")
     private String name;

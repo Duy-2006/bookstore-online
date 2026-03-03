@@ -51,6 +51,7 @@ public class HomeController {
 
         // THÊM DÒNG DEBUG (xem console khi truy cập trang)
         System.out.println("Số sách mới truyền vào view: " + (newBooks != null ? newBooks.size() : 0));
+        
 
         return "home";  // đảm bảo file là src/main/resources/templates/home.html
     }

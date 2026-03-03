@@ -128,16 +128,21 @@
 								</div>
 
 								<div class="col-md-4 mb-4">
-									<label class="form-label fw-bold text-secondary">Số
-										lượng tồn</label>
+									<label class="form-label fw-bold text-secondary"> Số
+										lượng tồn </label>
+
 									<div class="input-group">
-										<span class="input-group-text bg-light"><i
-											class="fa-solid fa-boxes-stacked text-muted"></i></span> <input
-											type="number" class="form-control fw-bold"
-											th:field="*{quantity}" min="0" required
-											th:classappend="${#fields.hasErrors('quantity')} ? 'is-invalid' : ''">
-										<div class="invalid-feedback" th:errors="*{quantity}">Lỗi
-											số lượng</div>
+										<span class="input-group-text bg-light"> <i
+											class="fa-solid fa-boxes-stacked text-muted"></i>
+										</span>
+
+										<!-- Input hiển thị -->
+										<input type="number" class="form-control fw-bold bg-light"
+											th:value="${book.quantity}" disabled
+											style="cursor: not-allowed;">
+
+										<!-- Hidden để submit -->
+										<input type="hidden" th:field="*{quantity}">
 									</div>
 								</div>
 
