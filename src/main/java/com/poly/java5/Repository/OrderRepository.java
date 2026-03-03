@@ -20,6 +20,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
         Integer userId,
         String status
     );
+    List<Order> findAllByOrderByOrderDateDesc();
 
     // ✅ Lấy đơn theo code + load chi tiết
     @Query(
