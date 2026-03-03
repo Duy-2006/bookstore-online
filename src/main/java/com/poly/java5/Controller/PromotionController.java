@@ -21,7 +21,7 @@ public class PromotionController {
 
     // lấy giá cuối cùng của 1 cuốn sách
     @GetMapping("/final-price/{bookId}")
-    public ResponseEntity<BigDecimal> getFinalPrice(@PathVariable Long bookId) {
+    public ResponseEntity<BigDecimal> getFinalPrice(@PathVariable Integer bookId) {
 
         BigDecimal finalPrice = promotionService.getFinalPrice(bookId);
 

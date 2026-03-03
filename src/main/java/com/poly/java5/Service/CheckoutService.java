@@ -24,11 +24,34 @@ import lombok.RequiredArgsConstructor;
 public class CheckoutService {
 	@PersistenceContext
 	private EntityManager em;
-
+	// tạo mã đơn hàng 
 	private String generateOrderCode() {
 		return "ORD" + System.currentTimeMillis();
 	}
 
+	
+	//	User bấm Thanh toán
+	//    ↓
+	//CheckoutService.checkout()
+	//    ↓
+	//Lấy Cart ACTIVE
+	//    ↓
+	//Lấy CartDetail đã selected
+	//    ↓
+	//Tạo Order
+	//    ↓
+	//For mỗi sản phẩm:
+	//Lock Book
+	//Kiểm tra tồn kho
+	//Trừ kho
+	//Tạo OrderDetail
+	//Xóa CartDetail
+	//    ↓
+	//Cập nhật tổng tiền
+	//    ↓
+	//Commit transaction
+	// tìm giỏ hàng, lấy các sản phẩm đã được chọn, 
+	//tạo oder lưu vào db trước khi tao oderdetail, 
 	@Transactional
 	public Order checkout(Integer userId, String customerName, String phone, String address, String paymentMethod) {
 
@@ -52,24 +75,24 @@ public class CheckoutService {
 		em.persist(order);
 
 		BigDecimal total = BigDecimal.ZERO;
-
+		// duyệt từng CartDetail
 		for (CartDetail cd : cartDetails) {
-
+			// không cho người khác mua cùng lúc 
 			Book book = em.find(Book.class, cd.getBook().getId(), jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
 
 			int qty = cd.getQuantity();
-
+			// kiểm tra tông kho 
 			if (book.getQuantity() < qty) {
 				throw new RuntimeException("Không đủ hàng: " + book.getTitle());
 			}
 
 			// ✅ Trừ kho tại đây
 			book.setQuantity(book.getQuantity() - qty);
-
+			// tạo oderDetail
 			OrderDetail od = OrderDetail.builder().order(order).book(book).quantity(qty).price(cd.getPrice()).build();
 
 			em.persist(od);
-
+			// tính tổng tiền 
 			total = total.add(od.calculateSubtotal());
 
 			// ✅ Xóa item đã mua khỏi giỏ

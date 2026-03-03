@@ -39,10 +39,11 @@ public class HomeController {
         
         // THÊM PHẦN NÀY: Gắn % khuyến mãi cao nhất cho từng sách (nếu có)
         if (newBooks != null && !newBooks.isEmpty()) {
-            newBooks.forEach(book -> {
-                BigDecimal maxPercent = promotionService.getMaxDiscountPercentage(book.getId().longValue());
-                book.setTempDiscountPercent(maxPercent);  // null nếu không có KM
-            });
+        	newBooks.forEach(book -> {
+        	    BigDecimal maxPercent = promotionService.getMaxDiscountPercentage(book.getId());
+        	    System.out.println("Book: " + book.getTitle() + " | Discount: " + maxPercent);
+        	    book.setTempDiscountPercent(maxPercent);
+        	});
         }
 
         model.addAttribute("newBooks", newBooks);

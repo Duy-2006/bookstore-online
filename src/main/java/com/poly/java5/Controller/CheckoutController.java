@@ -10,10 +10,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.poly.java5.Bean.CheckoutBean;
-import com.poly.java5.Entity.CartDetail;
 import com.poly.java5.Entity.Order;
 import com.poly.java5.Service.CartService;
 import com.poly.java5.Service.CheckoutService;

@@ -70,8 +70,8 @@
     </p>
 
     <span class="font-bold text-primary"
-          th:text="${item.itemTotal} + ' đ'">
-    </span>
+      th:text="${#numbers.formatDecimal(item.itemTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+</span>
   </div>
 
 </div>
@@ -105,23 +105,24 @@
 <div class="space-y-3 text-sm">
   <div class="flex justify-between">
     <span>Tạm tính</span>
-    <span th:text="${totalAmount} + ' đ'"></span>
+    <span th:text="${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
   </div>
 
   <div class="flex justify-between">
     <span>Phí vận chuyển</span>
-    <span th:text="${shippingFee} + ' đ'"></span>
+    <span th:text="${#numbers.formatDecimal(shippingFee, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
   </div>
 
   <div class="flex justify-between text-primary">
     <span>Giảm giá</span>
-    <span th:text="'-' + ${discount} + ' đ'"></span>
+    <span th:text="'-' + ${#numbers.formatDecimal(discount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
   </div>
 
   <div class="flex justify-between font-extrabold text-xl pt-4 border-t">
     <span>Tổng thanh toán</span>
     <span class="text-primary"
-          th:text="${finalAmount} + ' đ'"></span>
+      th:text="${#numbers.formatDecimal(finalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+</span>
   </div>
 </div>
 </section>

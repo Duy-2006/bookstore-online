@@ -86,7 +86,7 @@ public class AdminController {
 
     // [FIX] Đã đổi về Long để khớp với Repository
     @GetMapping("/categories/edit/{id}")
-    public String editCategory(@PathVariable("id") Long id, Model model) {
+    public String editCategory(@PathVariable("id") Integer id, Model model) {
         Category cat = catRepo.findById(id).orElseThrow(() -> new RuntimeException("Not found"));
         model.addAttribute("category", cat);
         return "admin/category-form";
@@ -101,7 +101,7 @@ public class AdminController {
 
     // [FIX] Đã đổi về Long
     @GetMapping("/categories/delete/{id}")
-    public String deleteCategory(@PathVariable("id") Long id, RedirectAttributes params) {
+    public String deleteCategory(@PathVariable("id") Integer id, RedirectAttributes params) {
         if (!isAdmin()) {
             params.addFlashAttribute("error", "Quyền hạn không đủ!");
             return "redirect:/admin/categories";
@@ -176,7 +176,7 @@ public class AdminController {
 
     // [FIX] Đã đổi về Long
     @GetMapping("/books/edit/{id}")
-    public String editBook(@PathVariable("id") Long id, Model model) {
+    public String editBook(@PathVariable("id") Integer id, Model model) {
         Book book = bookRepo.findById(id).orElseThrow(() -> new RuntimeException("Not found"));
         model.addAttribute("book", book);
         model.addAttribute("categories", catRepo.findAll());
@@ -229,7 +229,7 @@ public class AdminController {
 
     // [FIX] Đã đổi về Long
     @GetMapping("/books/delete/{id}")
-    public String deleteBook(@PathVariable("id") Long id, RedirectAttributes params) {
+    public String deleteBook(@PathVariable("id") Integer id, RedirectAttributes params) {
         if (!isAdmin()) {
             params.addFlashAttribute("error", "Quyền hạn không đủ!");
             return "redirect:/admin/books";
@@ -256,7 +256,7 @@ public class AdminController {
     }
 
     @PostMapping("/inventory/import")
-    public String importStock(@RequestParam("bookId") Long bookId, // [FIX] Đã đổi về Long
+    public String importStock(@RequestParam("bookId") Integer bookId, // [FIX] Đã đổi về Long
                               @RequestParam("quantity") Integer quantity,
                               @RequestParam("note") String note, 
                               RedirectAttributes params) {

@@ -50,8 +50,8 @@ public class AdminPromotionController {
     // SAVE
     @PostMapping("/save")
     public String save(@ModelAttribute Promotion promotion,
-                       @RequestParam(required = false) List<Long> bookIds,
-                       @RequestParam(required = false) List<Long> categoryIds,
+                       @RequestParam(required = false) List<Integer> bookIds,
+                       @RequestParam(required = false) List<Integer> categoryIds,
                        RedirectAttributes redirectAttributes) {
 
         promotionService.createPromotion(promotion, bookIds, categoryIds);
@@ -62,7 +62,7 @@ public class AdminPromotionController {
 
     // EDIT FORM - ĐÃ SỬA
     @GetMapping("/edit/{id}")
-    public String editForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String editForm(@PathVariable Integer id, Model model, RedirectAttributes redirectAttributes) {
         Optional<Promotion> optionalPromotion = promotionService.findById(id);  // ← dùng Optional
 
         if (optionalPromotion.isPresent()) {
@@ -80,8 +80,8 @@ public class AdminPromotionController {
     @PostMapping("/update")
     public String updatePromotion(
             @ModelAttribute Promotion promotion,
-            @RequestParam(required = false) List<Long> bookIds,
-            @RequestParam(required = false) List<Long> categoryIds,
+            @RequestParam(required = false) List<Integer> bookIds,
+            @RequestParam(required = false) List<Integer> categoryIds,
             RedirectAttributes redirectAttributes) {
 
         try {

@@ -35,7 +35,7 @@ public class CartController {
 		if (userId == null) {
 			return "redirect:/login";
 		}
-
+		// lấy danh sách sách , lấy số lượng sản phẩm trong giỏ hàng 
 		model.addAttribute("books", bookService.getAllBooks());
 		int cartCount = cartService.getCartItemCount(userId);
 		model.addAttribute("cartCount", cartCount);
@@ -67,6 +67,17 @@ public class CartController {
 	// ============ API ENDPOINTS ============
 
 	// API: Thêm vào giỏ hàng
+	// sản phẩm được lưu và db
+	//	User click "Add to cart"
+	//JavaScript gọi API /cart/api/add
+	//CartController
+	//CartService.addToCart()
+	//Kiểm tra book
+	//Lấy hoặc tạo Cart
+	//Kiểm tra đã tồn tại CartDetail chưa
+	//Insert hoặc Update CartDetail
+	//Update thời gian Cart
+	//Trả JSON về frontend
 	@PostMapping("/api/add")
 	@ResponseBody
 	public Map<String, Object> addToCartApi(@RequestParam Integer bookId,
@@ -129,6 +140,9 @@ public class CartController {
 	}
 
 	// API: Xóa sản phẩm
+	// bấm núc xóa thì gọi api contronller nhận request 
+	//kiểm tra đăng hập gọi sevice sử lý nó sẻ tim sản phẩm đó nếu có thì tiếp tục (không có thì trả về cảnh báo)
+	// kiểm tra userid nếu đúng thì xóa khỏi giỏ hàng 
 	@PostMapping("/api/remove")
 	@ResponseBody
 	public Map<String, Object> removeFromCartApi(
@@ -186,7 +200,7 @@ public class CartController {
 		return response;
 	}
 
-	// API: Lấy thông tin giỏ hàng
+	// API: Lấy thông tin giỏ hàng (dùng khi loat lại trang bằng  AJAX)
 	@GetMapping("/api/summary")
 	@ResponseBody
 	public Map<String, Object> getCartSummaryApi(HttpSession session) {
@@ -214,7 +228,7 @@ public class CartController {
 
 		return response;
 	}
-
+	// cập nhật trạng thái 
 	@PostMapping("/select")
 	@ResponseBody
 	public void selectCartItem(@RequestBody Map<String, Object> body, HttpSession session) {

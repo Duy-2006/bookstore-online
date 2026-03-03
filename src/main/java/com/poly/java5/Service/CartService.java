@@ -27,7 +27,9 @@ public class CartService {
 	@PersistenceContext
 	private EntityManager em;
 
-	// ================= CART =================
+	// Lấy giỏ hàng đang ACTIVE của user.
+	//Nếu chưa có → tạo mới
+	// lưu sản phẩm vào db
 
 	public Cart getOrCreateCart(Integer userId) {
 		List<Cart> carts = em
@@ -43,17 +45,14 @@ public class CartService {
 
 		Cart cart = Cart.builder().user(user).status("ACTIVE").createdDate(LocalDateTime.now())
 				.updatedDate(LocalDateTime.now()).build();
-
+		// chỗ này lưu db 
 		em.persist(cart);
 		return cart;
 	}
 
-	// ================= ADD =================
+	// Thêm sách vào giỏ hàng.
 
 	public Map<String, Object> addToCart(Integer userId, Integer bookId, Integer qty) {
-		System.out.println("USER ID: " + userId);
-		System.out.println("BOOK ID: " + bookId);
-		System.out.println("Tồn tại trong DB: " + (em.find(Book.class, bookId) != null));
 
 		if (qty <= 0)
 			throw new RuntimeException("Số lượng không hợp lệ");
@@ -63,7 +62,7 @@ public class CartService {
 			throw new RuntimeException("Sách không tồn tại");
 
 		Cart cart = getOrCreateCart(userId);
-
+		// kiêm tra sách có trong giỏ hàng chưa 
 		List<CartDetail> list = em
 				.createQuery("SELECT cd FROM CartDetail cd WHERE cd.cart.id = :cid AND cd.book.id = :bid",
 						CartDetail.class)
@@ -90,13 +89,13 @@ public class CartService {
 					.build();
 			em.persist(cd);
 		}
-
+		// cập nhật thời gian tạo cart
 		cart.setUpdatedDate(LocalDateTime.now());
-
+		
 		return getCartSummary(userId);
 	}
 
-	// ================= UPDATE QTY =================
+	// Cập nhật số lượng sản phẩm trong giỏ.
 
 	public Map<String, Object> updateCartItem(Integer userId, Integer cartDetailId, Integer newQty) {
 
@@ -113,7 +112,7 @@ public class CartService {
 
 		Book book = cd.getBook();
 
-		// ✅ chỉ kiểm tra
+		// ✅ chỉ kiểm tra tồn kkho 
 		if (book.getQuantity() < newQty)
 			throw new RuntimeException("Chỉ còn " + book.getQuantity() + " sản phẩm");
 
@@ -123,8 +122,14 @@ public class CartService {
 		return getCartSummary(userId);
 	}
 
-	// ================= REMOVE =================
-
+	// Xóa sản phẩm khỏi giỏ hàng	
+//	1. Tìm CartDetail theo id
+//	2. Kiểm tra quyền user
+//	3. Lưu reference Cart
+//	4. Xóa CartDetail
+//	5. Cập nhật updatedDate của Cart
+//	6. Tính lại summary
+//	7. Trả kết quả
 	public Map<String, Object> removeFromCart(Integer userId, Integer cartDetailId) {
 
     CartDetail cd = em.find(CartDetail.class, cartDetailId);
@@ -143,7 +148,7 @@ public class CartService {
     return getCartSummary(userId);
 }
 
-	// ================= SELECT =================
+	// Chọn / bỏ chọn sản phẩm để thanh toán.
 
 	public void updateSelected(Integer userId, Integer cartDetailId, Boolean selected) {
 
@@ -157,7 +162,7 @@ public class CartService {
 		cd.setSelected(selected);
 	}
 
-	// ================= SUMMARY =================
+	// Trả về toàn bộ thông tin giỏ hàng.
 
 	public Map<String, Object> getCartSummary(Integer userId) {
 

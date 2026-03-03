@@ -23,7 +23,7 @@ public class CategoryService {
     }
 
     // ===== LẤY CATEGORY THEO ID =====
-    public Category findById(Long id) {
+    public Category findById(Integer id) {
         return categoryRepository.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Không tìm thấy thể loại"));
