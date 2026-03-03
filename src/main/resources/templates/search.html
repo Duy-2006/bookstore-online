@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="head :: head"></head>
+
 <body class="bg-gray-100">
 <div th:replace="menu :: menu"></div>  
 
@@ -14,17 +15,29 @@
     <div class="grid grid-cols-5 gap-6">
 
         <div th:each="b : ${books}"
-             class="bg-white rounded-xl shadow p-4">
-            <div class="h-[200px] bg-gray-200 rounded mb-3"></div>
+             class="bg-white rounded-xl shadow p-4 hover:shadow-lg transition">
 
-            <p class="font-bold text-sm" th:text="${b.title}"></p>
-            <p class="text-xs text-gray-400" th:text="${b.author}"></p>
+            <div class="h-[200px] bg-gray-200 rounded mb-3 overflow-hidden">
+    <img th:src="${#strings.isEmpty(b.imageUrl)} 
+            ? @{/images/book-default.jpg} 
+            : @{/uploads/{img}(img=${b.imageUrl})}"
+         class="w-full h-full object-cover rounded">
+</div>
+
+            <p class="font-bold text-sm line-clamp-2"
+               th:text="${b.title}"></p>
+
+            <p class="text-xs text-gray-400"
+               th:text="${b.author != null ? b.author.name : ''}">
+            </p>
+
             <p class="font-bold text-primary mt-1"
-               th:text="${b.price}"></p>
+               th:text="${#numbers.formatDecimal(b.price,0,'COMMA',0,'POINT')} + ' ₫'">
+            </p>
         </div>
 
         <div th:if="${#lists.isEmpty(books)}"
-             class="col-span-5 text-center text-gray-400">
+             class="col-span-5 text-center text-gray-400 py-20">
             Không tìm thấy sách phù hợp
         </div>
 

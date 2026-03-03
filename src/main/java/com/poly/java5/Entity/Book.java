@@ -1,130 +1,144 @@
 package com.poly.java5.Entity;
 
-
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-import jakarta.persistence.*;
 
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import lombok.*;
+
+@Data
 @Entity
 @Table(name = "Books")
-@Data                       // Tạo getter/setter, toString, equals, hashCode
-@NoArgsConstructor          // Constructor không tham số
-@AllArgsConstructor         // Constructor có tất cả tham số
-@Builder           
-public class Book {
-	 @Id
-	    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	    @Column(name = "id")
-	    private Integer id;
-	    
-	    @Column(name = "title", nullable = false, length = 200)
-	    private String title;
-	    
-	    @Column(name = "author", nullable = false, length = 100)
-	    private String author;
-	    
-	    @Column(name = "publisher", length = 100)
-	    private String publisher;
-	    
-	    @Column(name = "publish_year")
-	    private Integer publishYear;
-	    
-	    @Column(name = "isbn", length = 20)
-	    private String isbn;
-	    
-	    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
-	    private String description;
-	    
-	    @Column(name = "price", nullable = false, precision = 10, scale = 2)
-	    private BigDecimal price;
-	    
-	    @Column(name = "stock_quantity")
-	    private Integer stockQuantity = 0;
-	    
-	    @Column(name = "image_url", length = 500)
-	    private String imageUrl;
-	    
-	    @ManyToOne(fetch = FetchType.LAZY)
-	    @JoinColumn(name = "category_id", foreignKey = @ForeignKey(name = "FK_Books_Category"))
-	    @ToString.Exclude  // Không include trong toString để tránh vòng lặp vô hạn
-	    @EqualsAndHashCode.Exclude  // Không include trong equals/hashCode
-	    private Category category;
-	    
-	    @ManyToOne(fetch = FetchType.LAZY)
-	    @JoinColumn(name = "seller_id", foreignKey = @ForeignKey(name = "FK_Books_Seller"))
-	    @ToString.Exclude
-	    @EqualsAndHashCode.Exclude
-	    private User seller;
-	    
-	    @Column(name = "created_date", updatable = false)
-	    private LocalDateTime createdDate;
-	    
-	    // OneToMany relationships (nếu cần)
-	    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-	    @ToString.Exclude
-	    @EqualsAndHashCode.Exclude
-	    private List<Review> reviews;
-	    
-	    @OneToMany(mappedBy = "book")
-	    private List<CartDetail> cartDetails;
+public class Book implements Serializable {
 
-	    
-	    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
-	    @ToString.Exclude
-	    @EqualsAndHashCode.Exclude
-	    private List<OrderDetail> orderDetails;
-	    
-	    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
-	    @ToString.Exclude
-	    @EqualsAndHashCode.Exclude
-	    private List<Wishlist> wishlists;
-	    
-	    // PrePersist callback - tự động set createdDate trước khi lưu
-	    @PrePersist
-	    protected void onCreate() {
-	        createdDate = LocalDateTime.now();
-	    }
-	    
-	    // Business logic methods
-	    public boolean isAvailable() {
-	        return stockQuantity != null && stockQuantity > 0;
-	    }
-	    
-	    public void decreaseStock(Integer quantity) {
-	        if (this.stockQuantity >= quantity) {
-	            this.stockQuantity -= quantity;
-	        } else {
-	            throw new IllegalArgumentException("Không đủ hàng trong kho");
-	        }
-	    }
-	    
-	    public void increaseStock(Integer quantity) {
-	        if (quantity > 0) {
-	            this.stockQuantity += quantity;
-	        }
-	    }
-	    
-	    // Tính tổng giá tiền (giá * số lượng)
-	    public BigDecimal calculateTotalPrice(Integer quantity) {
-	        return price.multiply(BigDecimal.valueOf(quantity));
-	    }
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    // 1. VALIDATION CƠ BẢN
+    @NotBlank(message = "Tên sách không được để trống")
+    @Column(nullable = false, length = 200)
+    private String title;
+
+    @NotBlank(message = "Mã ISBN không được để trống")
+    @Column(length = 20)
+    private String isbn;
+
+    // 2. GIÁ TIỀN & SỐ LƯỢNG (QUAN TRỌNG)
+    @NotNull(message = "Giá bán không được để trống")
+    @Min(value = 1000, message = "Giá bán phải từ 1.000 VNĐ trở lên")
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price; // Dùng BigDecimal để tính tiền chính xác
+
+    @NotNull(message = "Số lượng không được để trống")
+    @Min(value = 0, message = "Số lượng tồn kho không được âm")
+    @Column(name = "stock_quantity", nullable = false)
+    private Integer quantity;
+
+    // 3. THÔNG TIN KHÁC
+    @Column(length = 100)
+    private String publisher;
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
+    @Column(columnDefinition = "nvarchar(MAX)")
+    private String description;
+
+    private Boolean active = true;  // Đang kinh doanh
+    private Boolean deleted = false; // Xóa mềm (Soft delete)
+
+    @Column(name = "created_date", updatable = false)
+    private LocalDateTime createdDate;
+    
+    @Transient
+    private BigDecimal tempDiscountPercent;
+
+    public BigDecimal getTempDiscountPercent() {
+        return tempDiscountPercent;
+    }
+
+    public void setTempDiscountPercent(BigDecimal tempDiscountPercent) {
+        this.tempDiscountPercent = tempDiscountPercent;
+    }
+
+    // 4. QUAN HỆ (RELATIONSHIPS) - CÓ VALIDATION
+    @NotNull(message = "Vui lòng chọn tác giả")
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private Author author;
+
+    @NotNull(message = "Vui lòng chọn thể loại")
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private Category category;
+
+    // Quan hệ với người bán (nếu có hệ thống Multi-vendor)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id")
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private User seller;
+
+    // 5. CÁC LIST QUAN HỆ (ONE-TO-MANY)
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<Review> reviews; // Đánh giá sách
+
+    @OneToMany(mappedBy = "book")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<CartDetail> cartDetails; // Chi tiết giỏ hàng
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<OrderDetail> orderDetails; // Chi tiết đơn hàng
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<Wishlist> wishlists; // Danh sách yêu thích
+
+    // 6. AUTO SET DATE
+    @PrePersist
+    protected void onCreate() {
+        createdDate = LocalDateTime.now();
+    }
+
+    // 7. NGHIỆP VỤ (BUSINESS LOGIC)
+    
+    // Kiểm tra còn hàng hay không
+    public boolean isAvailable() {
+        return quantity != null && quantity > 0 && Boolean.TRUE.equals(active);
+    }
+
+    // Giảm tồn kho (Khi có đơn hàng)
+    public void decreaseStock(Integer amount) {
+        if (this.quantity < amount) {
+            throw new IllegalArgumentException("Kho không đủ hàng!");
+        }
+        this.quantity -= amount;
+    }
+
+    // Tăng tồn kho (Khi nhập hàng hoặc khách hủy đơn)
+    public void increaseStock(Integer amount) {
+        if (amount > 0) {
+            this.quantity += amount;
+        }
+    }
+
+    // Tính tổng tiền (Giá * Số lượng)
+    public BigDecimal calculateTotalPrice(Integer quantity) {
+        if (price == null || quantity == null) return BigDecimal.ZERO;
+        return price.multiply(BigDecimal.valueOf(quantity));
+    }
 }

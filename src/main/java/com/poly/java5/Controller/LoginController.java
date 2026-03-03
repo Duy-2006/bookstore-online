@@ -22,48 +22,74 @@ import jakarta.validation.Valid;
 @RequestMapping("/login")
 public class LoginController {
 	@Autowired
-	private UserService userService;
+    private UserService userService;
 
-	@GetMapping("")
-	public String loginUI(Model model) {
-		model.addAttribute("bean", new LoginBean());
-		return "login";
-	}
+    // ===== LOGIN UI =====
+    @GetMapping("")
+    public String loginUI(Model model) {
+        model.addAttribute("bean", new LoginBean());
+        return "login";
+    }
 
-	@PostMapping("")
-	public String login(@Valid @ModelAttribute("bean") LoginBean loginBean, Errors errors, Model model,
-			HttpServletRequest request, HttpServletResponse response) {
-		model.addAttribute("bean", loginBean);
-		// Kiểm tra validation cơ bản
-		if (errors.hasErrors()) {
-			return "login";
+    // ===== LOGIN POST =====
+    @PostMapping("")
+    public String login(
+            @Valid @ModelAttribute("bean") LoginBean loginBean,
+            Errors errors,
+            Model model,
+            HttpServletRequest request) {
 
-		}
-		// kiểm tra đăng nhập
-		User user = userService.login(loginBean.getUsernameOrEmail(), loginBean.getPassword());
+        if (errors.hasErrors()) {
+            return "login";
+        }
 
-		if (user == null) {
-			errors.rejectValue("usernameOrEmail", "login.failed", "Tên đăng nhập/email hoặc mật khẩu không đúng");
-			return "login";
-		}
-		// (tuỳ chọn) lưu Session 
-		Utils.setUserSession(user.getId(), request);
-		
-		// ===== KIỂM TRA SESSION =====
-		Integer sessionUserId = Utils.getUserIdFromSession(request);
-		System.out.println(">>> SESSION USER_ID = " + sessionUserId);
+        // 🔐 CHECK LOGIN
+        User user = userService.login(
+                loginBean.getUsernameOrEmail(),
+                loginBean.getPassword()
+        );
 
-		// 4. PHÂN QUYỀN THEO ROLE
-		if (user.isAdmin()) {
-			return "redirect:/register";
-		}
+        if (user == null) {
+            errors.rejectValue(
+                    "usernameOrEmail",
+                    "login.failed",
+                    "Tên đăng nhập/email hoặc mật khẩu không đúng"
+            );
+            return "login";
+        }
 
-		if (user.isSeller()) {
-			return "redirect:/seller";
-		}
+        if (!user.getActive()) {
+            errors.reject("login.locked", "Tài khoản đã bị khóa");
+            return "login";
+        }
+        
 
-		// mặc định BUYER
-		return "redirect:/home";
+        // ✅ LƯU SESSION (DUY NHẤT 1 KIỂU)
+        Utils.setUserSession(user.getId(), request);
 
-	}
+        // ===== LOG CHECK =====
+        System.out.println(">>> LOGIN SUCCESS | USER_ID = " + user.getId());
+        System.out.println(">>> ROLE = " + user.getRole());
+
+        // ===== PHÂN QUYỀN =====
+        if (user.isAdmin()) {
+            return "redirect:/admin";
+        }
+
+        return "redirect:/home";
+    }
+    
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request) {
+
+        System.out.println(">>> LOGOUT USER");
+
+        // ❌ XÓA SESSION
+        Utils.clearUserSession(request);
+
+        // 👉 quay về trang login hoặc home
+        return "redirect:/login";
+    }
 }
+
+   

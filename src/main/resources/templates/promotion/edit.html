@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	th:replace="admin/layout :: admin_layout(~{::content})">
+
+<th:block th:fragment="content">
+
+	<style>
+.promo-wrapper {
+	display: flex;
+	justify-content: center;
+	margin-top: 40px;
+}
+
+.promo-card {
+	background: #ffffff;
+	width: 100%;
+	max-width: 520px;
+	padding: 28px;
+	border-radius: 14px;
+	box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+.promo-card h3 {
+	text-align: center;
+	margin-bottom: 24px;
+	font-size: 20px;
+	font-weight: 600;
+	color: #111827;
+}
+
+.form-group {
+	margin-bottom: 18px;
+}
+
+label {
+	font-size: 14px;
+	font-weight: 500;
+	margin-bottom: 6px;
+	display: block;
+}
+
+input, select {
+	width: 100%;
+	padding: 10px 12px;
+	border-radius: 8px;
+	border: 1px solid #d1d5db;
+}
+
+input:focus, select:focus {
+	outline: none;
+	border-color: #6366f1;
+	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.date-row {
+	display: flex;
+	gap: 12px;
+}
+
+.checkbox-list {
+	max-height: 140px;
+	overflow-y: auto;
+	border: 1px solid #e5e7eb;
+	padding: 10px;
+	border-radius: 8px;
+}
+
+button {
+	width: 100%;
+	margin-top: 14px;
+	padding: 12px;
+	background: linear-gradient(135deg, #6366f1, #22c55e);
+	border: none;
+	border-radius: 10px;
+	color: #fff;
+	font-size: 15px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.note {
+	text-align: center;
+	font-size: 12px;
+	color: #6b7280;
+	margin-top: 14px;
+}
+
+.checkbox-list {
+	max-height: 140px;
+	overflow-y: auto;
+}
+
+.item-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 6px 8px;
+}
+
+/* tên sách nằm trái, không bị ép cột */
+.book-name {
+	flex: 1;
+}
+
+/* checkbox luôn sát phải */
+.item-row input {
+	margin-left: 12px;
+}
+</style>
+
+	<div class="promo-wrapper">
+		<div class="promo-card">
+
+			<h3>Tạo chương trình khuyến mãi</h3>
+
+			<form th:action="@{/admin/promotions/update}"
+				th:object="${promotion}" method="post">
+
+				<input type="hidden" th:field="*{id}">
+
+
+				<!-- tên -->
+				<div class="form-group">
+					<label>Tên khuyến mãi</label> <input type="text" th:field="*{name}"
+						placeholder="VD: Sale hè 2026">
+				</div>
+
+				<!-- loại giảm -->
+				<div class="form-group">
+					<label>Loại giảm giá</label> <select th:field="*{discountType}">
+						<option value="PERCENT">Giảm theo %</option>
+						<option value="AMOUNT">Giảm theo tiền</option>
+					</select>
+				</div>
+
+				<!-- giá trị -->
+				<div class="form-group">
+					<label>Giá trị giảm</label> <input type="number"
+						th:field="*{discountValue}" placeholder="VD: 10 hoặc 50000">
+				</div>
+
+				<!-- ngày -->
+				<div class="date-row">
+					<div class="form-group">
+						<label>Ngày bắt đầu</label> <input type="date"
+							th:field="*{startDate}">
+					</div>
+
+					<div class="form-group">
+						<label>Ngày kết thúc</label> <input type="date"
+							th:field="*{endDate}">
+					</div>
+				</div>
+				<!-- phạm vi áp dụng -->
+				<div class="form-group">
+					<label>Áp dụng cho</label> <select id="applyType">
+						<option value="ALL">Toàn sàn</option>
+						<option value="BOOK">Theo sách</option>
+						<option value="CATEGORY">Theo thể loại</option>
+					</select>
+				</div>
+				<div class="form-group" id="bookBlock" style="display: none;">
+					<label>Chọn sách áp dụng</label>
+					<div class="checkbox-list">
+						<div th:each="b : ${books}" class="item-row">
+							<span th:text="${b.title}"></span> <input type="checkbox"
+								name="bookIds" th:value="${b.id}"
+								th:checked="${promotion.books.contains(b)}">
+
+						</div>
+
+					</div>
+				</div>
+				<div class="form-group" id="categoryBlock" style="display: none;">
+					<label>Chọn thể loại áp dụng</label>
+					<div class="checkbox-list">
+						<div th:each="c : ${categories}" class="item-row">
+							<span th:text="${c.name}"></span><input type="checkbox"
+								name="categoryIds" th:value="${c.id}"
+								th:checked="${promotion.categories.contains(c)}">
+
+						</div>
+					</div>
+				</div>
+
+
+
+				<button type="submit">Tạo khuyến mãi</button>
+
+				<div class="note">Nếu không chọn sách hoặc thể loại → hệ thống
+					hiểu là áp dụng toàn bộ</div>
+
+			</form>
+		</div>
+	</div>
+	<script>
+		const applyType = document.getElementById("applyType");
+		const bookBlock = document.getElementById("bookBlock");
+		const categoryBlock = document.getElementById("categoryBlock");
+
+		applyType.addEventListener("change", function() {
+
+			if (this.value === "BOOK") {
+				bookBlock.style.display = "block";
+				categoryBlock.style.display = "none";
+			} else if (this.value === "CATEGORY") {
+				bookBlock.style.display = "none";
+				categoryBlock.style.display = "block";
+			} else {
+				bookBlock.style.display = "none";
+				categoryBlock.style.display = "none";
+			}
+		});
+	</script>
+</th:block>
+
+
+</html>
