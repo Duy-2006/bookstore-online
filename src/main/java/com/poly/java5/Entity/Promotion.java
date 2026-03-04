@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,6 +18,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,24 +42,31 @@ public class Promotion {
     @Column(nullable = false, length = 200)
     private String name;
 
-    // PERCENT hoặc MONEY
-    @Column(name = "discount_type", length = 20)
-    private String discountType;
-
-    // giá trị giảm (10% hoặc 50000đ)
-    @Column(name = "discount_value", precision = 10, scale = 2)
+    @Column(name = "discount_value", precision = 5, scale = 2)
     private BigDecimal discountValue;
 
     // thời gian áp dụng
-    @Column(name = "start_date")
+ // Trong entity Promotion
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @Column(name = "start_date") 
     private LocalDate startDate;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(name = "end_date")
     private LocalDate endDate;
 
     // đang bật hay tắt
     @Column(name = "status")
     private Boolean status = true;
+    
+    @Transient
+    public String getComputedStatus() {
+        if (startDate == null || endDate == null) return "UNKNOWN";
+        LocalDate today = LocalDate.now();
+        if (today.isBefore(startDate))  return "UPCOMING";
+        if (today.isAfter(endDate))     return "EXPIRED";
+        return "ACTIVE";
+    }
 
     // ALL | BOOK | CATEGORY
     @Column(name = "apply_type", length = 20)
@@ -78,5 +88,13 @@ public class Promotion {
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     private List<Category> categories = new ArrayList<>();
 
+    @Transient
+    public BigDecimal applyDiscount(BigDecimal originalPrice) {
+        if (discountValue == null || originalPrice == null) return originalPrice;
+        BigDecimal factor = BigDecimal.ONE.subtract(
+            discountValue.divide(BigDecimal.valueOf(100))
+        );
+        return originalPrice.multiply(factor).setScale(2, java.math.RoundingMode.HALF_UP);
+    }
 }
 

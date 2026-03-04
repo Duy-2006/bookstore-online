@@ -84,7 +84,7 @@ public class PromotionService {
         }
 
         return activePromos.stream()
-                .map(this::getPromotionDiscountPercentage)
+                .map(Promotion::getDiscountValue)        // Lấy thẳng discountValue (đã là %)
                 .filter(p -> p != null && p.compareTo(BigDecimal.ZERO) > 0)
                 .max(Comparator.naturalOrder())
                 .orElse(null);
@@ -111,33 +111,14 @@ public class PromotionService {
     }
 
     private BigDecimal calculateDiscountedPrice(BigDecimal price, Promotion promo) {
-        if (promo == null || promo.getDiscountValue() == null) {
-            return price;
-        }
+        if (promo == null || promo.getDiscountValue() == null) return price;
 
-        if ("PERCENT".equalsIgnoreCase(promo.getDiscountType())) {
-            BigDecimal discount = price.multiply(promo.getDiscountValue())
-                    .divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP);
-            return price.subtract(discount);
-        }
-
-        if ("MONEY".equalsIgnoreCase(promo.getDiscountType())) {
-            return price.subtract(promo.getDiscountValue());
-        }
-
-        return price;
+        BigDecimal discount = price.multiply(promo.getDiscountValue())
+                .divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP);
+        return price.subtract(discount);
     }
 
-    /**
-     * Tính % giảm của 1 promotion (chỉ khi type PERCENT, MONEY thì ước lượng %)
-     */
-    private BigDecimal getPromotionDiscountPercentage(Promotion promo) {
-        if ("PERCENT".equalsIgnoreCase(promo.getDiscountType())) {
-            return promo.getDiscountValue();
-        }
-        // Nếu là MONEY, có thể ước lượng % nếu cần, nhưng tạm trả null để ưu tiên PERCENT
-        return null;
-    }
+  
 
     @Transactional(readOnly = true)
     public List<Promotion> getAll() {
@@ -148,7 +129,6 @@ public class PromotionService {
     public Promotion createPromotion(Promotion promotion, List<Long> bookIds, List<Long> categoryIds) {
         promotion.setStatus(true);
         Promotion saved = promotionRepository.save(promotion);
-
         savePromotionRelations(saved, bookIds, categoryIds);
         return saved;
     }
@@ -158,15 +138,13 @@ public class PromotionService {
         Promotion existing = promotionRepository.findById(promotion.getId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy promotion id = " + promotion.getId()));
 
-        // Update fields
         existing.setName(promotion.getName());
-        existing.setDiscountType(promotion.getDiscountType());
+        // Bỏ setDiscountType
         existing.setDiscountValue(promotion.getDiscountValue());
         existing.setStartDate(promotion.getStartDate());
         existing.setEndDate(promotion.getEndDate());
         existing.setStatus(promotion.getStatus());
 
-        // Xóa quan hệ cũ và thêm mới
         existing.getBooks().clear();
         existing.getCategories().clear();
 
@@ -185,18 +163,15 @@ public class PromotionService {
         Promotion promo = promotionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy promotion id = " + id));
 
-        // Clear relations trước khi delete
         promo.getBooks().clear();
         promo.getCategories().clear();
-        promotionRepository.save(promo); // flush clear
-
+        promotionRepository.save(promo);
         promotionRepository.delete(promo);
     }
 
     private void savePromotionRelations(Promotion promotion, List<Long> bookIds, List<Long> categoryIds) {
         List<PromotionDetail> details = new ArrayList<>();
 
-        // BOOK
         Optional.ofNullable(bookIds).orElse(List.of()).forEach(id -> {
             bookRepository.findById(id).ifPresent(book -> {
                 PromotionDetail detail = new PromotionDetail();
@@ -206,7 +181,6 @@ public class PromotionService {
             });
         });
 
-        // CATEGORY
         Optional.ofNullable(categoryIds).orElse(List.of()).forEach(id -> {
             categoryRepository.findById(id).ifPresent(cat -> {
                 PromotionDetail detail = new PromotionDetail();
@@ -220,6 +194,7 @@ public class PromotionService {
             promotionDetailRepository.saveAll(details);
         }
     }
+
     public Optional<Promotion> findById(Long id) {
         return promotionRepository.findById(id);
     }
