@@ -5,9 +5,13 @@
 <th:block th:fragment="content">
 
 	<style>
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap');
+@import
+	url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap')
+	;
 
-* { box-sizing: border-box; }
+* {
+	box-sizing: border-box;
+}
 
 .promo-wrapper {
 	display: flex;
@@ -28,7 +32,7 @@
 	width: 100%;
 	padding: 32px 28px;
 	border-radius: 16px;
-	box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 	border: 1px solid #f0f0f0;
 }
 
@@ -53,10 +57,7 @@ label {
 	color: #374151;
 }
 
-input[type="text"],
-input[type="number"],
-input[type="date"],
-select {
+input[type="text"], input[type="number"], input[type="date"], select {
 	width: 100%;
 	padding: 10px 13px;
 	border-radius: 9px;
@@ -71,7 +72,7 @@ select {
 input:focus, select:focus {
 	outline: none;
 	border-color: #6366f1;
-	box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
 	background: #fff;
 }
 
@@ -80,7 +81,9 @@ input:focus, select:focus {
 	gap: 12px;
 }
 
-.date-row .form-group { flex: 1; }
+.date-row .form-group {
+	flex: 1;
+}
 
 button[type="submit"] {
 	width: 100%;
@@ -98,8 +101,13 @@ button[type="submit"] {
 	transition: opacity 0.2s, transform 0.1s;
 }
 
-button[type="submit"]:hover { opacity: 0.92; }
-button[type="submit"]:active { transform: scale(0.99); }
+button[type="submit"]:hover {
+	opacity: 0.92;
+}
+
+button[type="submit"]:active {
+	transform: scale(0.99);
+}
 
 .note {
 	text-align: center;
@@ -118,7 +126,7 @@ button[type="submit"]:active { transform: scale(0.99); }
 .selection-panel {
 	background: #ffffff;
 	border-radius: 16px;
-	box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 	border: 1px solid #f0f0f0;
 	padding: 28px;
 }
@@ -209,9 +217,19 @@ button[type="submit"]:active { transform: scale(0.99); }
 	padding-right: 4px;
 }
 
-.item-grid::-webkit-scrollbar { width: 5px; }
-.item-grid::-webkit-scrollbar-track { background: #f3f4f6; border-radius: 4px; }
-.item-grid::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+.item-grid::-webkit-scrollbar {
+	width: 5px;
+}
+
+.item-grid::-webkit-scrollbar-track {
+	background: #f3f4f6;
+	border-radius: 4px;
+}
+
+.item-grid::-webkit-scrollbar-thumb {
+	background: #d1d5db;
+	border-radius: 4px;
+}
 
 .item-card {
 	display: flex;
@@ -259,33 +277,34 @@ button[type="submit"]:active { transform: scale(0.99); }
 			<div class="promo-card">
 				<h3>Tạo chương trình khuyến mãi</h3>
 
-				<form th:action="@{/admin/promotions/save}" th:object="${promotion}" method="post">
+				<form th:action="@{/admin/promotions/save}" th:object="${promotion}"
+					method="post">
 
 					<div class="form-group">
 
-						<label>Tên khuyến mãi</label>
-						<input type="text" th:field="*{name}" placeholder="VD: Sale hè 2026">
+						<label>Tên khuyến mãi</label> <input type="text"
+							th:field="*{name}" placeholder="VD: Sale hè 2026">
 					</div>
 
 					<div class="form-group">
-						<label>Giá trị giảm</label>
-						<input type="number" th:field="*{discountValue}" placeholder="VD: 10 (%)">
+						<label>Giá trị giảm</label> <input type="number"
+							th:field="*{discountValue}" placeholder="VD: 10 (%)">
 					</div>
 
 					<div class="date-row">
 						<div class="form-group">
-							<label>Ngày bắt đầu</label>
-							<input type="date" th:field="*{startDate}">
+							<label>Ngày bắt đầu</label> <input type="date"
+								th:field="*{startDate}">
 						</div>
 						<div class="form-group">
-							<label>Ngày kết thúc</label>
-							<input type="date" th:field="*{endDate}">
+							<label>Ngày kết thúc</label> <input type="date"
+								th:field="*{endDate}">
 						</div>
 					</div>
 
 					<div class="form-group">
-						<label>Áp dụng cho</label>
-						<select id="applyType">
+						<label>Áp dụng cho</label> <select th:field="*{applyType}"
+							id="applyType">
 							<option value="ALL">Toàn sàn</option>
 							<option value="BOOK">Theo sách</option>
 							<option value="CATEGORY">Theo thể loại</option>
@@ -297,7 +316,8 @@ button[type="submit"]:active { transform: scale(0.99); }
 					<div id="hiddenCategoryInputs"></div>
 
 					<button type="submit">Tạo khuyến mãi</button>
-					<p class="note">Nếu không chọn sách hoặc thể loại → hệ thống hiểu là áp dụng toàn bộ</p>
+					<p class="note">Nếu không chọn sách hoặc thể loại → hệ thống
+						hiểu là áp dụng toàn bộ</p>
 				</form>
 			</div>
 		</div>
@@ -309,46 +329,56 @@ button[type="submit"]:active { transform: scale(0.99); }
 				<!-- Empty state -->
 				<div id="emptyState" class="empty-state">
 					<svg width="68" height="68" viewBox="0 0 68 68" fill="none">
-						<rect x="10" y="14" width="48" height="40" rx="7" stroke="#d1d5db" stroke-width="2.5" fill="#f9fafb"/>
-						<path d="M22 30h24M22 39h14" stroke="#d1d5db" stroke-width="2.5" stroke-linecap="round"/>
+						<rect x="10" y="14" width="48" height="40" rx="7" stroke="#d1d5db"
+							stroke-width="2.5" fill="#f9fafb" />
+						<path d="M22 30h24M22 39h14" stroke="#d1d5db" stroke-width="2.5"
+							stroke-linecap="round" />
 					</svg>
-					<p>Chọn <strong style="color:#6366f1">Theo sách</strong> hoặc <strong style="color:#6366f1">Theo thể loại</strong><br>để hiển thị danh sách tại đây</p>
+					<p>
+						Chọn <strong style="color: #6366f1">Theo sách</strong> hoặc <strong
+							style="color: #6366f1">Theo thể loại</strong><br>để hiển thị
+						danh sách tại đây
+					</p>
 				</div>
 
 				<!-- Book list -->
-				<div id="bookPanel" style="display:none;">
-					<h4>Danh sách sách <span class="badge" id="bookBadge">0</span></h4>
-					<input class="search-box" type="text" id="bookSearch" placeholder="🔍 Tìm kiếm sách...">
+				<div id="bookPanel" style="display: none;">
+					<h4>
+						Danh sách sách <span class="badge" id="bookBadge">0</span>
+					</h4>
+					<input class="search-box" type="text" id="bookSearch"
+						placeholder="🔍 Tìm kiếm sách...">
 					<div class="select-bar">
 						<span class="count" id="bookCount">0 sách đã chọn</span>
-						<button type="button" class="select-all-btn" id="bookSelectAll">Chọn tất cả</button>
+						<button type="button" class="select-all-btn" id="bookSelectAll">Chọn
+							tất cả</button>
 					</div>
 					<div class="item-grid" id="bookGrid">
-						<div th:each="b : ${books}"
-							class="item-card"
-							th:data-id="${b.id}"
+						<div th:each="b : ${books}" class="item-card" th:data-id="${b.id}"
 							th:data-name="${b.title}">
-							<input type="checkbox" th:value="${b.id}">
-							<span class="item-label" th:text="${b.title}"></span>
+							<input type="checkbox" th:value="${b.id}"> <span
+								class="item-label" th:text="${b.title}"></span>
 						</div>
 					</div>
 				</div>
 
 				<!-- Category list -->
-				<div id="categoryPanel" style="display:none;">
-					<h4>Danh sách thể loại <span class="badge" id="catBadge">0</span></h4>
-					<input class="search-box fi fi-ds-search" type="text" id="catSearch" placeholder=" Tìm kiếm thể loại...">
+				<div id="categoryPanel" style="display: none;">
+					<h4>
+						Danh sách thể loại <span class="badge" id="catBadge">0</span>
+					</h4>
+					<input class="search-box fi fi-ds-search" type="text"
+						id="catSearch" placeholder=" Tìm kiếm thể loại...">
 					<div class="select-bar">
 						<span class="count" id="catCount">0 thể loại đã chọn</span>
-						<button type="button" class="select-all-btn" id="catSelectAll">Chọn tất cả</button>
+						<button type="button" class="select-all-btn" id="catSelectAll">Chọn
+							tất cả</button>
 					</div>
 					<div class="item-grid" id="catGrid">
-						<div th:each="c : ${categories}"
-							class="item-card"
-							th:data-id="${c.id}"
-							th:data-name="${c.name}">
-							<input type="checkbox" th:value="${c.id}">
-							<span class="item-label" th:text="${c.name}"></span>
+						<div th:each="c : ${categories}" class="item-card"
+							th:data-id="${c.id}" th:data-name="${c.name}">
+							<input type="checkbox" th:value="${c.id}"> <span
+								class="item-label" th:text="${c.name}"></span>
 						</div>
 					</div>
 				</div>

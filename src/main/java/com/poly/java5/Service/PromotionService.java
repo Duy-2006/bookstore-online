@@ -28,182 +28,174 @@ import lombok.RequiredArgsConstructor;
 public class PromotionService {
 
 	private final PromotionRepository promotionRepository;
-	private final PromotionDetailRepository promotionDetailRepository;
-	private final BookRepository bookRepository;
-	private final CategoryRepository categoryRepository;
+    private final PromotionDetailRepository promotionDetailRepository;
+    private final BookRepository bookRepository;
+    private final CategoryRepository categoryRepository;
 
-	private final LocalDate today = LocalDate.now(); // Có thể inject nếu cần timezone khác
+    private final LocalDate today = LocalDate.now(); // Có thể inject nếu cần timezone khác
 
-	/**
-	 * Tính giá cuối cùng sau khi áp dụng khuyến mãi mạnh nhất (giá thấp nhất)
-	 */
-	@Transactional(readOnly = true)
-	public BigDecimal getFinalPrice(Integer bookId) {
-		Book book = bookRepository.findById(bookId).orElse(null);
-		if (book == null)
-			return BigDecimal.ZERO;
+    /**
+     * Tính giá cuối cùng sau khi áp dụng khuyến mãi mạnh nhất (giá thấp nhất)
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal getFinalPrice(Integer bookId) {
+        Book book = bookRepository.findById(bookId).orElse(null);
+        if (book == null) {
+            return BigDecimal.ZERO;
+        }
 
-		BigDecimal originalPrice = book.getPrice();
-		if (originalPrice == null || originalPrice.compareTo(BigDecimal.ZERO) <= 0) {
-			return originalPrice;
-		}
+        BigDecimal originalPrice = book.getPrice();
+        if (originalPrice == null || originalPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            return originalPrice;
+        }
 
-		List<Promotion> activePromotions = getActivePromotionsForBook(book);
-		if (activePromotions.isEmpty())
-			return originalPrice;
+        // Lấy tất cả khuyến mãi đang active áp dụng cho sách này
+        List<Promotion> activePromotions = getActivePromotionsForBook(book);
 
-		return activePromotions.stream().map(p -> calculateDiscountedPrice(originalPrice, p)).min(BigDecimal::compareTo)
-				.orElse(originalPrice);
-	}
+        if (activePromotions.isEmpty()) {
+            return originalPrice;
+        }
 
-	/**
-	 * Tính % giảm giá cao nhất đang áp dụng cho sách (dùng để hiển thị badge % trên
-	 * card) Trả về null nếu không có khuyến mãi nào
-	 */
-	@Transactional(readOnly = true)
-	public BigDecimal getMaxDiscountPercentage(Integer bookId) {
-		Book book = bookRepository.findById(bookId).orElse(null);
-		if (book == null)
-			return null;
+        BigDecimal finalPrice = originalPrice;
+        for (Promotion promo : activePromotions) {
+            BigDecimal discounted = calculateDiscountedPrice(originalPrice, promo);
+            if (discounted.compareTo(finalPrice) < 0) {
+                finalPrice = discounted;
+            }
+        }
 
-		List<Promotion> activePromos = getActivePromotionsForBook(book);
-		   System.out.println("Book ID: " + bookId);
-		    System.out.println("Active promotions: " + activePromos.size());
-		if (activePromos.isEmpty())
-			return null;
+        return finalPrice;
+    }
 
-		return activePromos.stream().map(p -> getPromotionDiscountPercentage(p, book.getPrice()))
-				.filter(p -> p != null && p.compareTo(BigDecimal.ZERO) > 0).max(BigDecimal::compareTo).orElse(null);
-	}
+    /**
+     * Tính % giảm giá cao nhất đang áp dụng cho sách (dùng để hiển thị badge % trên card)
+     * Trả về null nếu không có khuyến mãi nào
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal getMaxDiscountPercentage(Integer bookId) {
+        Book book = bookRepository.findById(bookId).orElse(null);
+        if (book == null) {
+            return null;
+        }
 
-	private List<Promotion> getActivePromotionsForBook(Book book) {
+        List<Promotion> activePromos = getActivePromotionsForBook(book);
+        if (activePromos.isEmpty()) {
+            return null;
+        }
 
-		List<Promotion> bookPromos = promotionDetailRepository.findActiveByBookId(book.getId());
+        return activePromos.stream()
+                .map(Promotion::getDiscountValue)        // Lấy thẳng discountValue (đã là %)
+                .filter(p -> p != null && p.compareTo(BigDecimal.ZERO) > 0)
+                .max(Comparator.naturalOrder())
+                .orElse(null);
+    }
 
-		List<Promotion> categoryPromos = (book.getCategory() != null)
-				? promotionDetailRepository.findActiveByCategoryId(book.getCategory().getId())
-				: List.of();
+    private List<Promotion> getActivePromotionsForBook(Book book) {
+        // 1. Khuyến mãi áp dụng trực tiếp cho sách (qua PromotionDetail hoặc ManyToMany)
+        List<Promotion> bookPromos = promotionRepository.findActiveByBookId(book.getId());
 
-		List<Promotion> allPromos = promotionRepository.findActiveAllPromotions();
+        // 2. Khuyến mãi áp dụng cho category của sách
+        Integer categoryId = (book.getCategory() != null) ? book.getCategory().getId() : null;
+        List<Promotion> categoryPromos = (categoryId != null)
+                ? promotionRepository.findActiveByCategoryId(categoryId)
+                : List.of();
 
-		return Stream.of(bookPromos, categoryPromos, allPromos).flatMap(List::stream).distinct()
-				.collect(Collectors.toList());
-	}
+        // 3. Khuyến mãi áp dụng cho ALL
+        List<Promotion> allPromos = promotionRepository.findActiveAllPromotions();
 
-	private BigDecimal calculateDiscountedPrice(BigDecimal price, Promotion promo) {
-		if (promo == null || promo.getDiscountValue() == null) {
-			return price;
-		}
+        // Gộp và loại trùng (dùng Set nếu cần, nhưng List + distinct cũng ok)
+        return Stream.of(bookPromos, categoryPromos, allPromos)
+                .flatMap(List::stream)
+                .distinct()
+                .collect(Collectors.toList());
+    }
 
-		if ("PERCENT".equalsIgnoreCase(promo.getDiscountType())) {
-			BigDecimal discount = price.multiply(promo.getDiscountValue()).divide(BigDecimal.valueOf(100), 2,
-					BigDecimal.ROUND_HALF_UP);
-			return price.subtract(discount);
-		}
+    private BigDecimal calculateDiscountedPrice(BigDecimal price, Promotion promo) {
+        if (promo == null || promo.getDiscountValue() == null) return price;
 
-		if ("AMOUNT".equalsIgnoreCase(promo.getDiscountType())) {
-			return price.subtract(promo.getDiscountValue());
-		}
+        BigDecimal discount = price.multiply(promo.getDiscountValue())
+                .divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP);
+        return price.subtract(discount);
+    }
 
-		return price;
-	}
+  
 
-	/**
-	 * Tính % giảm của 1 promotion (chỉ khi type PERCENT, MONEY thì ước lượng %)
-	 */
-	private BigDecimal getPromotionDiscountPercentage(Promotion promo, BigDecimal originalPrice) {
+    @Transactional(readOnly = true)
+    public List<Promotion> getAll() {
+        return promotionRepository.findAll();
+    }
 
-		if ("PERCENT".equalsIgnoreCase(promo.getDiscountType())) {
-			return promo.getDiscountValue();
-		}
+    @Transactional
+    public Promotion createPromotion(Promotion promotion, List<Integer> bookIds, List<Integer> categoryIds) {
+        promotion.setStatus(true);
+        Promotion saved = promotionRepository.save(promotion);
+        savePromotionRelations(saved, bookIds, categoryIds);
+        return saved;
+    }
 
-		if ("AMOUNT".equalsIgnoreCase(promo.getDiscountType()) && originalPrice != null
-				&& originalPrice.compareTo(BigDecimal.ZERO) > 0) {
+    @Transactional
+    public Promotion updatePromotion(Promotion promotion, List<Integer> bookIds, List<Integer> categoryIds) {
+        Promotion existing = promotionRepository.findById(promotion.getId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy promotion id = " + promotion.getId()));
 
-			return promo.getDiscountValue().multiply(BigDecimal.valueOf(100)).divide(originalPrice, 0,
-					BigDecimal.ROUND_HALF_UP);
-		}
+        existing.setName(promotion.getName());
+        // Bỏ setDiscountType
+        existing.setDiscountValue(promotion.getDiscountValue());
+        existing.setStartDate(promotion.getStartDate());
+        existing.setEndDate(promotion.getEndDate());
+        existing.setStatus(promotion.getStatus());
 
-		return null;
-	}
+        existing.getBooks().clear();
+        existing.getCategories().clear();
 
-	@Transactional(readOnly = true)
-	public List<Promotion> getAll() {
-		return promotionRepository.findAll();
-	}
+        if (bookIds != null && !bookIds.isEmpty()) {
+            existing.getBooks().addAll(bookRepository.findAllById(bookIds));
+        }
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            existing.getCategories().addAll(categoryRepository.findAllById(categoryIds));
+        }
 
-	@Transactional
-	public Promotion createPromotion(Promotion promotion, List<Integer> bookIds, List<Integer> categoryIds) {
+        return promotionRepository.save(existing);
+    }
 
-		promotion.setStatus(true);
-		Promotion saved = promotionRepository.save(promotion);
+    @Transactional
+    public void deletePromotion(Integer id) {
+        Promotion promo = promotionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy promotion id = " + id));
 
-		savePromotionRelations(saved, bookIds, categoryIds);
-		return saved;
-	}
+        promo.getBooks().clear();
+        promo.getCategories().clear();
+        promotionRepository.save(promo);
+        promotionRepository.delete(promo);
+    }
 
-	@Transactional
-	public Promotion updatePromotion(Promotion promotion, List<Integer> bookIds, List<Integer> categoryIds) {
+    private void savePromotionRelations(Promotion promotion, List<Integer> bookIds, List<Integer> categoryIds) {
+        List<PromotionDetail> details = new ArrayList<>();
 
-		Promotion existing = promotionRepository.findById(promotion.getId())
-				.orElseThrow(() -> new RuntimeException("Không tìm thấy promotion id = " + promotion.getId()));
+        Optional.ofNullable(bookIds).orElse(List.of()).forEach(id -> {
+            bookRepository.findById(id).ifPresent(book -> {
+                PromotionDetail detail = new PromotionDetail();
+                detail.setPromotion(promotion);
+                detail.setBook(book);
+                details.add(detail);
+            });
+        });
 
-		existing.setName(promotion.getName());
-		existing.setDiscountType(promotion.getDiscountType());
-		existing.setDiscountValue(promotion.getDiscountValue());
-		existing.setStartDate(promotion.getStartDate());
-		existing.setEndDate(promotion.getEndDate());
-		existing.setStatus(promotion.getStatus());
+        Optional.ofNullable(categoryIds).orElse(List.of()).forEach(id -> {
+            categoryRepository.findById(id).ifPresent(cat -> {
+                PromotionDetail detail = new PromotionDetail();
+                detail.setPromotion(promotion);
+                detail.setCategory(cat);
+                details.add(detail);
+            });
+        });
 
-		// XÓA DETAIL CŨ
-		promotionDetailRepository.deleteById(existing.getId());
+        if (!details.isEmpty()) {
+            promotionDetailRepository.saveAll(details);
+        }
+    }
 
-		// LƯU DETAIL MỚI
-		savePromotionRelations(existing, bookIds, categoryIds);
-
-		return promotionRepository.save(existing);
-	}
-
-	@Transactional
-	public void deletePromotion(Integer id) {
-
-		Promotion promo = promotionRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Không tìm thấy promotion id = " + id));
-
-		// XÓA DETAIL TRƯỚC
-		promotionDetailRepository.deleteById(promo.getId());
-
-		promotionRepository.delete(promo);
-	}
-
-	private void savePromotionRelations(Promotion promotion, List<Integer> bookIds, List<Integer> categoryIds) {
-
-		List<PromotionDetail> details = new ArrayList<>();
-
-		Optional.ofNullable(bookIds).orElse(List.of()).forEach(id -> {
-			bookRepository.findById(id).ifPresent(book -> {
-				PromotionDetail detail = new PromotionDetail();
-				detail.setPromotion(promotion);
-				detail.setBook(book);
-				details.add(detail);
-			});
-		});
-
-		Optional.ofNullable(categoryIds).orElse(List.of()).forEach(id -> {
-			categoryRepository.findById(id).ifPresent(cat -> {
-				PromotionDetail detail = new PromotionDetail();
-				detail.setPromotion(promotion);
-				detail.setCategory(cat);
-				details.add(detail);
-			});
-		});
-
-		if (!details.isEmpty()) {
-			promotionDetailRepository.saveAll(details);
-		}
-	}
-
-	public Optional<Promotion> findById(Integer id) {
-		return promotionRepository.findById(id);
-	}
+    public Optional<Promotion> findById(Integer id) {
+        return promotionRepository.findById(id);
+    }
 }

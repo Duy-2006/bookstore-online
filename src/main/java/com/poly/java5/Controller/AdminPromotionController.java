@@ -1,5 +1,6 @@
 package com.poly.java5.Controller;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +36,7 @@ public class AdminPromotionController {
     @GetMapping
     public String list(Model model) {
         model.addAttribute("promotions", promotionService.getAll());
+        model.addAttribute("today", LocalDate.now());
         return "promotion/list";
     }
 
@@ -60,7 +62,7 @@ public class AdminPromotionController {
         return "redirect:/admin/promotions";
     }
 
-    // EDIT FORM - ĐÃ SỬA
+//    // EDIT FORM - ĐÃ SỬA
     @GetMapping("/edit/{id}")
     public String editForm(@PathVariable Integer id, Model model, RedirectAttributes redirectAttributes) {
         Optional<Promotion> optionalPromotion = promotionService.findById(id);  // ← dùng Optional
@@ -69,6 +71,7 @@ public class AdminPromotionController {
             model.addAttribute("promotion", optionalPromotion.get());
             model.addAttribute("books", bookRepository.findByDeletedFalse());
             model.addAttribute("categories", categoryRepository.findAll());
+            
             return "promotion/edit";
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy khuyến mãi với ID: " + id);
@@ -76,8 +79,8 @@ public class AdminPromotionController {
         }
     }
 
-    // UPDATE - bạn đã có logic tốt, chỉ thêm flash message
-    @PostMapping("/update")
+    // UPDATE - 
+    @PostMapping("/update/{id}")
     public String updatePromotion(
             @ModelAttribute Promotion promotion,
             @RequestParam(required = false) List<Integer> bookIds,
@@ -89,6 +92,17 @@ public class AdminPromotionController {
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật khuyến mãi thành công!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi cập nhật: " + e.getMessage());
+        }
+        return "redirect:/admin/promotions";
+    }
+    
+    @GetMapping("/delete/{id}")
+    public String deletePromotion(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+        try {
+            promotionService.deletePromotion(id);
+            redirectAttributes.addFlashAttribute("success", "Xóa khuyến mãi thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Xóa thất bại: " + e.getMessage());
         }
         return "redirect:/admin/promotions";
     }
