@@ -46,6 +46,7 @@ public class RegisterController {
 	    user.setEmail(bean.getEmail());
 	    user.setPhone(bean.getPhone());
 	    user.setPassword(bean.getPassword());
+	    user.setFullName(bean.getName());
 	    user.setActive(true);
 
 	    // Gọi service

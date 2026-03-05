@@ -126,6 +126,12 @@ public class UserService {
 	    public User findById(Integer id) {
 	        return manager.find(User.class, id);
 	    }
+
+	    @Transactional
+	    public void save(User user) {
+	        manager.merge(user);
+	    }
+		
 	    
 	  
 }

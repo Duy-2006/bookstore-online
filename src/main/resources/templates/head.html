@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:fragment="head">
+<th:block th:fragment="head">
 
 <!-- META -->
 <meta charset="UTF-8">
@@ -10,32 +10,29 @@
 <!-- GOOGLE FONT -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link
-	href="https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&display=swap"
-	rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&display=swap" rel="stylesheet">
+
 
 <!-- TAILWIND -->
 <script src="https://cdn.tailwindcss.com"></script>
+
 <script>
-	tailwind.config = {
-		theme : {
-			extend : {
-				fontFamily : {
-					display : [ 'Manrope', 'sans-serif' ]
-				},
-				colors : {
-					primary : '#0a4da3',
-					accent : '#f44336'
-				}
-			}
-		}
-	}
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['Manrope', 'sans-serif']
+      },
+      colors: {
+        primary: '#0a4da3',
+        accent: '#f44336'
+      }
+    }
+  }
+}
 </script>
 
-<!-- GOOGLE MATERIAL ICONS -->
-<link
-	href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
-	rel="stylesheet">
+</th:block>
 
 </head>
 </html>

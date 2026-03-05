@@ -165,10 +165,10 @@ tbody tr:hover {
 
 						<!-- Loại áp dụng: ALL / BOOK / CATEGORY -->
 						<td><span th:if="${p.applyType == 'ALL'}"
-							class="badge badge-all">🌐 Toàn sàn</span> <span
+							class="badge badge-all"> Toàn sàn</span> <span
 							th:if="${p.applyType == 'BOOK'}" class="badge badge-book">📚
 								Theo sách</span> <span th:if="${p.applyType == 'CATEGORY'}"
-							class="badge badge-cat">🏷️ Theo thể loại</span> <span
+							class="badge badge-cat"> Theo thể loại</span> <span
 							th:if="${p.applyType == null}" class="badge"
 							style="background: #f3f4f6; color: #9ca3af">—</span></td>
 
@@ -177,13 +177,13 @@ tbody tr:hover {
 
 						
 						<td><span th:if="${p.computedStatus == 'UPCOMING'}"
-							class="badge badge-upcoming">🕐 Sắp diễn ra</span> <span
+							class="badge badge-upcoming"> Sắp diễn ra</span> <span
 							th:if="${p.computedStatus == 'ACTIVE'}"
-							class="badge badge-active">✅ Đang chạy</span> <span
+							class="badge badge-active"> Đang chạy</span> <span
 							th:if="${p.computedStatus == 'EXPIRED'}"
-							class="badge badge-expired">❌ Đã kết thúc</span> <span
+							class="badge badge-expired"> Đã kết thúc</span> <span
 							th:if="${p.computedStatus == 'UNKNOWN'}" class="badge"
-							style="background: #f3f4f6; color: #6b7280;">⚠️ Chưa đặt
+							style="background: #f3f4f6; color: #6b7280;">⚠ Chưa đặt
 								ngày</span></td>
 
 						<td class="actions"><a

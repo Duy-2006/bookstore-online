@@ -74,19 +74,8 @@ public class Promotion {
 
 	    // chi tiết áp dụng cho sách / thể loại
 	    @OneToMany(mappedBy = "promotion", cascade = CascadeType.ALL, orphanRemoval = true)
-	    private List<PromotionDetail> details;
+	    private List<PromotionDetail> details = new ArrayList<>();
 	    
-	    @ManyToMany
-	    @JoinTable(name = "promotion_book",
-	            joinColumns = @JoinColumn(name = "promotion_id"),
-	            inverseJoinColumns = @JoinColumn(name = "book_id"))
-	    private List<Book> books = new ArrayList<>();
-
-	    @ManyToMany
-	    @JoinTable(name = "promotion_category",
-	            joinColumns = @JoinColumn(name = "promotion_id"),
-	            inverseJoinColumns = @JoinColumn(name = "category_id"))
-	    private List<Category> categories = new ArrayList<>();
 
 	    @Transient
 	    public BigDecimal applyDiscount(BigDecimal originalPrice) {

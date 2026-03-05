@@ -79,16 +79,14 @@ public class LoginController {
         return "redirect:/home";
     }
     
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     public String logout(HttpServletRequest request) {
 
         System.out.println(">>> LOGOUT USER");
 
-        // ❌ XÓA SESSION
-        Utils.clearUserSession(request);
+        request.getSession().invalidate();
 
-        // 👉 quay về trang login hoặc home
-        return "redirect:/login";
+        return "redirect:/home";
     }
 }
 

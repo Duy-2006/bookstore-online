@@ -85,4 +85,8 @@ public class User implements Serializable {
         if (spent > 0) return "Tiềm năng";
         return "Khách mới";
     }
+
+	
+
+	
 }

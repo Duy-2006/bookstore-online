@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.poly.java5.Entity.Order;
@@ -71,5 +73,17 @@ public class OrderController {
 	}
 
 	 //code sua
+	@PostMapping("/orders/cancel/{id}")
+	public String cancelOrder(@PathVariable("id") Integer id,
+	                          HttpSession session) {
+
+	    Integer userId = (Integer) session.getAttribute("USER_ID");
+	    if (userId == null)
+	        return "redirect:/login";
+
+	    orderService.cancelOrder(id, userId);
+
+	    return "redirect:/my-orders";
+	}
 
 }

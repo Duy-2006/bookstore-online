@@ -134,25 +134,47 @@ public class PromotionService {
     }
 
     @Transactional
-    public Promotion updatePromotion(Promotion promotion, List<Integer> bookIds, List<Integer> categoryIds) {
-        Promotion existing = promotionRepository.findById(promotion.getId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy promotion id = " + promotion.getId()));
+    public Promotion updatePromotion(Promotion promotion,
+                                      List<Integer> bookIds,
+                                      List<Integer> categoryIds) {
 
+        Promotion existing = promotionRepository.findById(promotion.getId())
+                .orElseThrow(() -> new RuntimeException(
+                        "Không tìm thấy promotion id = " + promotion.getId()));
+
+        // Update thông tin cơ bản
         existing.setName(promotion.getName());
-        // Bỏ setDiscountType
         existing.setDiscountValue(promotion.getDiscountValue());
         existing.setStartDate(promotion.getStartDate());
         existing.setEndDate(promotion.getEndDate());
         existing.setStatus(promotion.getStatus());
+        existing.setApplyType(promotion.getApplyType());
 
-        existing.getBooks().clear();
-        existing.getCategories().clear();
+        // XÓA toàn bộ detail cũ (orphanRemoval=true sẽ tự xóa DB)
+        existing.getDetails().clear();
 
-        if (bookIds != null && !bookIds.isEmpty()) {
-            existing.getBooks().addAll(bookRepository.findAllById(bookIds));
+        // Thêm detail mới theo bookIds
+        if (bookIds != null) {
+            for (Integer id : bookIds) {
+                bookRepository.findById(id).ifPresent(book -> {
+                    PromotionDetail detail = new PromotionDetail();
+                    detail.setPromotion(existing);
+                    detail.setBook(book);
+                    existing.getDetails().add(detail);
+                });
+            }
         }
-        if (categoryIds != null && !categoryIds.isEmpty()) {
-            existing.getCategories().addAll(categoryRepository.findAllById(categoryIds));
+
+        // Thêm detail mới theo categoryIds
+        if (categoryIds != null) {
+            for (Integer id : categoryIds) {
+                categoryRepository.findById(id).ifPresent(category -> {
+                    PromotionDetail detail = new PromotionDetail();
+                    detail.setPromotion(existing);
+                    detail.setCategory(category);
+                    existing.getDetails().add(detail);
+                });
+            }
         }
 
         return promotionRepository.save(existing);
@@ -160,13 +182,7 @@ public class PromotionService {
 
     @Transactional
     public void deletePromotion(Integer id) {
-        Promotion promo = promotionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy promotion id = " + id));
-
-        promo.getBooks().clear();
-        promo.getCategories().clear();
-        promotionRepository.save(promo);
-        promotionRepository.delete(promo);
+        promotionRepository.deleteById(id);
     }
 
     private void savePromotionRelations(Promotion promotion, List<Integer> bookIds, List<Integer> categoryIds) {

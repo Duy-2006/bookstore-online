@@ -49,8 +49,16 @@ public class AdminController {
 
 	// --- HELPER: KIỂM TRA QUYỀN ADMIN ---
 	private boolean isAdmin() {
-		User user = (User) session.getAttribute("currentUser");
-		return user != null && user.getRole() == UserRole.ADMIN;
+
+	    Integer userId = (Integer) session.getAttribute("USER_ID");
+
+	    if (userId == null) {
+	        return false;
+	    }
+
+	    User user = userRepo.findById(userId).orElse(null);
+
+	    return user != null && user.getRole() == UserRole.ADMIN;
 	}
 
 	// ================= DASHBOARD (THỐNG KÊ TỔNG QUAN) =================
